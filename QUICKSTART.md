@@ -36,6 +36,7 @@ curl http://localhost:8080/actuator/prometheus | grep jvm_memory
 # 4. Stop with Ctrl+C
 ```
 
+
 ## 10-Minute OpenShift-Native Deploy
 
 Build and deploy all samples using OpenShift BuildConfigs (recommended):
@@ -54,12 +55,15 @@ cd scripts
 # 4. Wait for builds to complete (monitor in another terminal)
 oc get builds -w -n java-metrics-demo
 
-# 5. Deploy applications
+# 5. Deploy all metrics samples to cluster
 ./deploy-all.sh
 
 # 6. Watch deployment
 oc get pods -n java-metrics-demo -w
 ```
+
+**About `deploy-all.sh`:**
+This script applies all deployment manifests for every metrics sample (Undertow, Spring Boot, Tomcat, WildFly) and OpenJDK version to your OpenShift namespace. It prints status and how to check pods, services, and ServiceMonitors. See [DEPLOYMENT.md](DEPLOYMENT.md) for more details.
 
 ## Alternative: Local Build & Push (Optional)
 
@@ -73,11 +77,16 @@ If you prefer building locally and pushing to external registry:
 export REGISTRY=quay.io/yourorg
 ./scripts/build-all.sh
 
-# 3. Override specific versions for testing
-BUILDER_IMAGE_17=registry.../openjdk-17:1.22 \
+
+# 3. Override specific versions for testing (dynamic version management)
+BUILDER_IMAGE_17=registry.access.redhat.com/ubi8/openjdk-17:1.22 \
 TOMCAT_VERSION=10.1.16 \
 REGISTRY=quay.io/yourorg \
 ./scripts/build-all.sh
+
+# Use a centralized config for overrides
+cp versions.env.example versions.env
+source versions.env && ./scripts/build-all.sh
 
 # 4. Push to registry
 ./scripts/push-all.sh
@@ -91,14 +100,15 @@ REGISTRY=quay.io/yourorg \
 gh workflow run build-metrics-samples.yml
 ```
 
-### Version Override Examples
+
+### Version Override Examples (Dynamic Version Management)
 
 Test different image versions without modifying files:
 
 ```bash
 # Test newer OpenJDK patch version
-BUILDER_IMAGE_21=registry.../openjdk-21:1.22 \
-RUNTIME_IMAGE_21=registry.../openjdk-21-runtime:1.22 \
+BUILDER_IMAGE_21=registry.access.redhat.com/ubi8/openjdk-21:1.22 \
+RUNTIME_IMAGE_21=registry.access.redhat.com/ubi8/openjdk-21-runtime:1.22 \
 ./scripts/build-all.sh
 
 # Test different Tomcat version
@@ -107,6 +117,10 @@ TOMCAT_VERSION=10.1.16 ./scripts/build-all.sh
 # Test newer WildFly release
 WILDFLY_IMAGE_17=quay.io/wildfly/wildfly:31.0.2.Final-jdk17 \
 ./scripts/build-all.sh
+
+# Use a centralized config for batch overrides
+cp versions.env.example versions.env
+source versions.env && ./scripts/build-all.sh
 ```
 
 ## Verify Deployment

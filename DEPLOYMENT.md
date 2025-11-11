@@ -112,27 +112,45 @@ oc get pods -l app=metrics-undertow
 oc get svc metrics-undertow
 ```
 
-### Deploy All Samples
+
+### Deploy All Samples (Recommended)
+
+The easiest way to deploy all metrics samples is to use the provided script:
+
 ```bash
-#!/bin/bash
-set -e
-
-SAMPLES=(undertow springboot tomcat wildfly)
-
-oc new-project java-metrics-demo || oc project java-metrics-demo
-
-for SAMPLE in "${SAMPLES[@]}"; do
-  echo "Deploying metrics-sample-${SAMPLE}..."
-  cd "metrics-sample-${SAMPLE}"
-  oc apply -f k8s/
-  cd ..
-done
-
-echo "Deployment complete!"
-echo "Check status: oc get pods"
+cd scripts
+./deploy-all.sh
 ```
 
-Save as `deploy-all.sh`
+This script applies all deployment manifests for every metrics sample (Undertow, Spring Boot, Tomcat, WildFly) and OpenJDK version to your OpenShift namespace (default: `java-metrics-demo`). It prints status and how to check pods, services, and ServiceMonitors.
+
+**Prerequisites:**
+- OpenShift CLI (`oc`) installed and logged in
+- Namespace/project created (default: `java-metrics-demo`)
+- ImageStreams and BuildConfigs created (see above)
+
+**Manual Steps (if not using the script):**
+1. Create namespace:
+  ```bash
+  oc new-project java-metrics-demo
+  ```
+2. For each sample:
+  ```bash
+  cd metrics-sample-<runtime>
+  oc apply -f k8s/
+  cd ..
+  ```
+3. Check status:
+  ```bash
+  oc get pods -n java-metrics-demo
+  oc get svc -n java-metrics-demo
+  oc get servicemonitor -n java-metrics-demo
+  ```
+
+See [README.md](README.md#openshift-native-build-recommended) and [QUICKSTART.md](QUICKSTART.md#10-minute-openshift-native-deploy) for more details.
+## Dynamic Version Management
+
+All Dockerfiles and BuildConfigs support dynamic version overrides for Java base images and runtime versions. You can override image versions at build time using environment variables, build arguments, or a centralized config file. See [README.md](README.md#dynamic-version-management) and [VERSIONS.md](VERSIONS.md) for details and examples.
 
 ## Access Applications
 

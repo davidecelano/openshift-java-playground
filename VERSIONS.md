@@ -69,22 +69,23 @@ When updating image versions across the repository:
 8. Run baseline captures: `./scripts/capture-baselines.sh`
 9. Commit changes with clear version update message
 
-### Dynamic Override (Per-Build)
 
-Override versions without modifying files using build arguments:
+### Dynamic Version Management (Per-Build Overrides)
 
-**Local Builds (Podman/Docker)**:
+You can override image versions and runtime versions at build time without modifying any files. This is supported for both local and OpenShift builds:
+
+#### Local Builds (Podman/Docker)
 ```bash
 # Override single runtime
 cd metrics-sample-undertow
 podman build -f Dockerfile.openjdk17 \
-  --build-arg BUILDER_IMAGE=registry.../openjdk-17:1.22 \
-  --build-arg RUNTIME_IMAGE=registry.../openjdk-17-runtime:1.22 \
+  --build-arg BUILDER_IMAGE=registry.access.redhat.com/ubi8/openjdk-17:1.22 \
+  --build-arg RUNTIME_IMAGE=registry.access.redhat.com/ubi8/openjdk-17-runtime:1.22 \
   -t myimage:tag .
 
-# Override via build-all.sh script
-BUILDER_IMAGE_17=registry.../openjdk-17:1.22 \
-RUNTIME_IMAGE_17=registry.../openjdk-17-runtime:1.22 \
+# Override via build-all.sh script (recommended for batch builds)
+BUILDER_IMAGE_17=registry.access.redhat.com/ubi8/openjdk-17:1.22 \
+RUNTIME_IMAGE_17=registry.access.redhat.com/ubi8/openjdk-17-runtime:1.22 \
 ./scripts/build-all.sh
 
 # Override Tomcat version
@@ -93,9 +94,13 @@ TOMCAT_VERSION=10.1.16 ./scripts/build-all.sh
 # Override WildFly image
 WILDFLY_IMAGE_21=quay.io/wildfly/wildfly:31.0.2.Final-jdk21 \
 ./scripts/build-all.sh
+
+# Use a centralized config for batch overrides
+cp versions.env.example versions.env
+source versions.env && ./scripts/build-all.sh
 ```
 
-**OpenShift Builds**:
+#### OpenShift Builds
 ```bash
 # Edit BuildConfig to change buildArgs values
 oc edit buildconfig metrics-undertow-openjdk17
@@ -109,6 +114,8 @@ oc patch buildconfig metrics-undertow-openjdk17 --type=json -p='[
 # Trigger build with updated args
 oc start-build metrics-undertow-openjdk17
 ```
+
+See [README.md](README.md#dynamic-version-management), [QUICKSTART.md](QUICKSTART.md#version-override-examples-dynamic-version-management), and [DEPLOYMENT.md](DEPLOYMENT.md#dynamic-version-management) for more usage patterns and details.
 
 **Available Build Arguments**:
 

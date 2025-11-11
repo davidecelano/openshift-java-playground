@@ -34,6 +34,7 @@ Each sample exposes Prometheus JVM metrics and is built across **OpenJDK 11, 17,
 - Git repository clone
 - (Optional) Podman/Docker for local builds
 
+
 ### OpenShift-Native Build (Recommended)
 
 ```bash
@@ -41,9 +42,29 @@ Each sample exposes Prometheus JVM metrics and is built across **OpenJDK 11, 17,
 cd scripts
 ./trigger-openshift-builds.sh
 
-# Deploy to cluster
+# Deploy all metrics samples to cluster
 ./deploy-all.sh
 ```
+
+#### About `deploy-all.sh`
+This script applies all deployment manifests for every metrics sample (Undertow, Spring Boot, Tomcat, WildFly) and OpenJDK version to your OpenShift namespace.
+
+**Prerequisites:**
+- OpenShift CLI (`oc`) installed and logged in
+- Namespace/project created (default: `java-metrics-demo`)
+- ImageStreams and BuildConfigs created (see [DEPLOYMENT.md](DEPLOYMENT.md))
+
+**Usage:**
+```bash
+cd scripts
+./deploy-all.sh
+```
+
+**Expected Output:**
+- Deploys all sample applications and prints status for each
+- Shows how to check pod, service, and ServiceMonitor status
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for more details and manual deployment steps.
 
 ### Local Development Build
 
@@ -54,34 +75,45 @@ REGISTRY=quay.io/yourorg ./scripts/push-all.sh
 ./scripts/deploy-all.sh
 ```
 
+
 ## Image Version Management
 
 All container images use pinned versions for reproducibility. See [`VERSIONS.md`](VERSIONS.md) for:
 - Current UBI OpenJDK image tags
 - WildFly image versions
 - Update procedures and lifecycle information
+- Dynamic override instructions
 
 **Never use `:latest` tags in production scenarios.**
 
-### Dynamic Version Overrides
+### Dynamic Version Management
 
-Override image versions per-build without modifying files:
+You can override image versions at build time without modifying any files. This is supported for both local and OpenShift builds:
 
+- **Dockerfile `ARG` directives**: All Dockerfiles use `ARG` for base images and versions, with defaults from `VERSIONS.md`.
+- **BuildConfig `buildArgs`**: OpenShift BuildConfigs pass build arguments for version control.
+- **Environment variable overrides**: Use environment variables (e.g., `BUILDER_IMAGE_17`, `RUNTIME_IMAGE_21`, `TOMCAT_VERSION`) to override defaults in scripts.
+- **Centralized config**: Copy and edit `versions.env.example` to `versions.env` for batch overrides.
+
+**Examples:**
 ```bash
-# Override OpenJDK builder image
-BUILDER_IMAGE_17=registry.../openjdk-17:1.22 ./scripts/build-all.sh
+# Override OpenJDK builder image for Java 17
+BUILDER_IMAGE_17=registry.access.redhat.com/ubi8/openjdk-17:1.22 ./scripts/build-all.sh
 
 # Override Tomcat version
 TOMCAT_VERSION=10.1.16 ./scripts/build-all.sh
 
-# Override multiple versions
-BUILDER_IMAGE_17=registry.../openjdk-17:1.22 \
-RUNTIME_IMAGE_17=registry.../openjdk-17-runtime:1.22 \
-WILDFLY_IMAGE_17=quay.io/wildfly/wildfly:31.0.2.Final-jdk17 \
-./scripts/build-all.sh
+# Use a centralized config
+cp versions.env.example versions.env
+source versions.env && ./scripts/build-all.sh
 ```
 
-All Dockerfiles use `ARG` directives with defaults from `VERSIONS.md`, enabling flexible version management for experiments and testing.
+For OpenShift builds, you can patch BuildConfigs to override build arguments:
+```bash
+oc patch buildconfig metrics-sample-springboot-openjdk17 -p '{"spec":{"strategy":{"dockerStrategy":{"buildArgs":[{"name":"BUILDER_IMAGE","value":"registry.access.redhat.com/ubi8/openjdk-17:1.22"}]}}}}'
+```
+
+See [`VERSIONS.md`](VERSIONS.md) for a full list of build arguments and override patterns.
 
 ### Access Metrics
 ```bash

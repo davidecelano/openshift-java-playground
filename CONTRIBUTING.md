@@ -38,11 +38,18 @@ cd <scenario-name>
 
 **Scenario Naming Convention**: `<category>-<focus>` (e.g., `tuning-cgroups-v2`, `gc-comparison-g1-vs-zgc`)
 
+
 ### 3. Improve Documentation
 
 - Update `.github/copilot-instructions.md` with new patterns discovered
 - Add troubleshooting tips to `DEPLOYMENT.md`
 - Expand runtime-specific tuning guidance in copilot instructions
+- When adding or updating scripts (e.g., `deploy-all.sh`, `build-all.sh`), ensure their usage, prerequisites, and expected output are documented in `README.md`, `QUICKSTART.md`, and `DEPLOYMENT.md` as appropriate.
+- When changing version management mechanisms (Dockerfile ARGs, BuildConfig buildArgs, environment variable overrides), update `README.md`, `QUICKSTART.md`, and `VERSIONS.md` with clear usage examples and cross-references.
+### 5. Documentation Consistency
+
+- Cross-reference related scripts and documentation sections for clarity and discoverability.
+- Ensure all instructions are consistent and up to date with the latest repository state.
 
 ### 4. Enhance CI/CD
 
