@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+# Always resolve paths from repo root, regardless of CWD
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$SCRIPT_DIR/.."
+
 NAMESPACE="${NAMESPACE:-java-metrics-demo}"
 RUNTIME="${1:-all}"
 JAVA_VERSION="${2:-all}"
@@ -16,9 +20,6 @@ if ! oc get namespace "$NAMESPACE" &>/dev/null; then
   echo "Creating namespace $NAMESPACE..."
   oc create namespace "$NAMESPACE"
 fi
-
-# Switch to namespace
-oc project "$NAMESPACE"
 
 # Array of runtimes
 RUNTIMES=("undertow" "springboot" "tomcat" "wildfly")
@@ -39,9 +40,9 @@ create_imagestream() {
   local runtime=$1
   local sample_dir="metrics-sample-${runtime}"
 
-  if ! oc get imagestream "metrics-${runtime}" &>/dev/null; then
+  if ! oc get imagestream "metrics-${runtime}" -n "$NAMESPACE" &>/dev/null; then
     echo "📦 Creating ImageStream for ${runtime}..."
-    oc apply -f "../${sample_dir}/openshift/imagestream.yaml"
+    oc apply -f "$REPO_ROOT/${sample_dir}/openshift/imagestream.yaml" -n "$NAMESPACE"
   fi
 }
 
@@ -55,17 +56,17 @@ trigger_build() {
   echo "🔨 Processing ${bc_name}..."
 
   # Create/update BuildConfig
-  if ! oc get buildconfig "$bc_name" &>/dev/null; then
+  if ! oc get buildconfig "$bc_name" -n "$NAMESPACE" &>/dev/null; then
     echo "   Creating BuildConfig..."
-    oc apply -f "../${sample_dir}/openshift/buildconfig-openjdk${version}.yaml"
+    oc apply -f "$REPO_ROOT/${sample_dir}/openshift/buildconfig-openjdk${version}.yaml" -n "$NAMESPACE"
   else
     echo "   BuildConfig exists, updating..."
-    oc apply -f "../${sample_dir}/openshift/buildconfig-openjdk${version}.yaml"
+    oc apply -f "$REPO_ROOT/${sample_dir}/openshift/buildconfig-openjdk${version}.yaml" -n "$NAMESPACE"
   fi
 
   # Start build
   echo "   Starting build..."
-  oc start-build "$bc_name" --follow || echo "   ⚠️  Build may be running already"
+  oc start-build "$bc_name" -n "$NAMESPACE" --follow || echo "   ⚠️  Build may be running already"
   echo
 }
 
