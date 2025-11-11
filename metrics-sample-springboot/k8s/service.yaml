@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: metrics-springboot
+  labels:
+    app: metrics-springboot
+spec:
+  selector:
+    app: metrics-springboot
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+  type: ClusterIP

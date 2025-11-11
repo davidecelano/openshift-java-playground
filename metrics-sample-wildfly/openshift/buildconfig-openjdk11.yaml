@@ -1,0 +1,28 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: metrics-wildfly-openjdk11
+  labels:
+    app: metrics-wildfly
+    version: openjdk11
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: metrics-wildfly:openjdk11
+  source:
+    type: Git
+    git:
+      uri: https://github.com/yourorg/openshift-java-playground.git
+      ref: main
+    contextDir: metrics-sample-wildfly
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile.openjdk11
+      noCache: false
+      forcePull: true
+  triggers:
+    - type: ConfigChange
+    - type: ImageChange
+      imageChange: {}

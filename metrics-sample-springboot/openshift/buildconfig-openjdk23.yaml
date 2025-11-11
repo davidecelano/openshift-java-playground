@@ -1,0 +1,28 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: metrics-springboot-openjdk23
+  labels:
+    app: metrics-springboot
+    version: openjdk23
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: metrics-springboot:openjdk23
+  source:
+    type: Git
+    git:
+      uri: https://github.com/yourorg/openshift-java-playground.git
+      ref: main
+    contextDir: metrics-sample-springboot
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile.openjdk23
+      noCache: false
+      forcePull: true
+  triggers:
+    - type: ConfigChange
+    - type: ImageChange
+      imageChange: {}

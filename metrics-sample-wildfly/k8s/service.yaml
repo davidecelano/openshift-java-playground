@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: metrics-wildfly
+  labels:
+    app: metrics-wildfly
+spec:
+  selector:
+    app: metrics-wildfly
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+  - name: management
+    port: 9990
+    targetPort: 9990
+  type: ClusterIP

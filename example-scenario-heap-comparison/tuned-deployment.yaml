@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: heap-test-tuned-openjdkVERSION
+  labels:
+    app: heap-test-tuned
+    version: openjdkVERSION
+    scenario: heap-comparison
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: heap-test-tuned
+      version: openjdkVERSION
+  template:
+    metadata:
+      labels:
+        app: heap-test-tuned
+        version: openjdkVERSION
+        scenario: heap-comparison
+    spec:
+      containers:
+      - name: app
+        image: quay.io/yourorg/metrics-undertow:openjdkVERSION
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: JAVA_OPTS
+          value: "-Xlog:os+container=info -XX:MaxRAMPercentage=65.0 -XX:InitialRAMPercentage=50.0"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5

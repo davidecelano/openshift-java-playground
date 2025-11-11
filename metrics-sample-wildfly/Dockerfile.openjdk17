@@ -1,0 +1,20 @@
+FROM registry.access.redhat.com/ubi8/openjdk-17:1.21 AS builder
+WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+FROM quay.io/wildfly/wildfly:31.0.1.Final-jdk17
+COPY --from=builder /app/target/metrics.war /opt/jboss/wildfly/standalone/deployments/
+
+RUN /opt/jboss/wildfly/bin/jboss-cli.sh --commands="embed-server --std-out=echo,\
+/extension=org.wildfly.extension.micrometer:add,\
+/subsystem=micrometer:add(exposed-subsystems=[\"*\"]),\
+/subsystem=micrometer/registry=prometheus:add(context=\"/metrics\"\,security-enabled=false),\
+stop-embedded-server"
+
+ENV JAVA_OPTS="-Xlog:os+container=info -XX:MaxRAMPercentage=65.0 -XX:InitialRAMPercentage=50.0"
+ENV JBOSS_MAX_THREADS=80
+
+EXPOSE 8080 9990
+CMD ["/opt/jboss/wildfly/bin/standalone.sh", "-b", "0.0.0.0", "-bmanagement", "0.0.0.0"]

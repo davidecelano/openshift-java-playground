@@ -1,0 +1,9 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: metrics-wildfly
+  labels:
+    app: metrics-wildfly
+spec:
+  lookupPolicy:
+    local: false

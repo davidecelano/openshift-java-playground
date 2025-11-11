@@ -1,0 +1,154 @@
+name: Build Metrics Samples
+
+on:
+  workflow_dispatch:
+    inputs:
+      runtime:
+        description: 'Runtime to build (undertow, springboot, tomcat, wildfly, or all)'
+        required: false
+        default: 'all'
+      java_version:
+        description: 'Java version to build (11, 17, 21, 23, or all)'
+        required: false
+        default: 'all'
+
+env:
+  REGISTRY: quay.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}
+
+jobs:
+  build-undertow:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.runtime == 'undertow' || github.event.inputs.runtime == 'all'
+    strategy:
+      matrix:
+        java_version: [11, 17, 21, 23]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Podman
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install podman
+
+      - name: Log in to Quay.io
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: redhat-actions/podman-login@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASSWORD }}
+
+      - name: Build Undertow image
+        working-directory: metrics-sample-undertow
+        run: |
+          podman build -f Dockerfile.openjdk${{ matrix.java_version }} \
+            -t ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/metrics-undertow:openjdk${{ matrix.java_version }} .
+
+      - name: Push Undertow image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          podman push ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/metrics-undertow:openjdk${{ matrix.java_version }}
+
+  build-springboot:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.runtime == 'springboot' || github.event.inputs.runtime == 'all'
+    strategy:
+      matrix:
+        java_version: [11, 17, 21, 23]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Podman
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install podman
+
+      - name: Log in to Quay.io
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: redhat-actions/podman-login@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASSWORD }}
+
+      - name: Build Spring Boot image
+        working-directory: metrics-sample-springboot
+        run: |
+          podman build -f Dockerfile.openjdk${{ matrix.java_version }} \
+            -t ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/metrics-springboot:openjdk${{ matrix.java_version }} .
+
+      - name: Push Spring Boot image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          podman push ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/metrics-springboot:openjdk${{ matrix.java_version }}
+
+  build-tomcat:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.runtime == 'tomcat' || github.event.inputs.runtime == 'all'
+    strategy:
+      matrix:
+        java_version: [11, 17, 21, 23]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Podman
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install podman
+
+      - name: Log in to Quay.io
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: redhat-actions/podman-login@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASSWORD }}
+
+      - name: Build Tomcat image
+        working-directory: metrics-sample-tomcat
+        run: |
+          podman build -f Dockerfile.openjdk${{ matrix.java_version }} \
+            -t ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/metrics-tomcat:openjdk${{ matrix.java_version }} .
+
+      - name: Push Tomcat image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          podman push ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/metrics-tomcat:openjdk${{ matrix.java_version }}
+
+  build-wildfly:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.runtime == 'wildfly' || github.event.inputs.runtime == 'all'
+    strategy:
+      matrix:
+        java_version: [11, 17, 21, 23]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Podman
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install podman
+
+      - name: Log in to Quay.io
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: redhat-actions/podman-login@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASSWORD }}
+
+      - name: Build WildFly image
+        working-directory: metrics-sample-wildfly
+        run: |
+          podman build -f Dockerfile.openjdk${{ matrix.java_version }} \
+            -t ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/metrics-wildfly:openjdk${{ matrix.java_version }} .
+
+      - name: Push WildFly image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          podman push ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/metrics-wildfly:openjdk${{ matrix.java_version }}

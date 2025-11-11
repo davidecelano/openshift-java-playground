@@ -1,0 +1,28 @@
+FROM registry.access.redhat.com/ubi8/openjdk-11:1.21 AS builder
+WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.10
+RUN yum install -y java-11-openjdk-headless && yum clean all
+RUN curl -L https://archive.apache.org/dist/tomcat/tomcat-10/v10.1.15/bin/apache-tomcat-10.1.15.tar.gz | tar xz -C /opt && \
+    mv /opt/apache-tomcat-10.1.15 /opt/tomcat && \
+    rm -rf /opt/tomcat/webapps/*
+
+COPY --from=builder /app/target/metrics.war /opt/tomcat/webapps/ROOT.war
+
+# Configure Tomcat for container
+ENV CATALINA_OPTS="-Xlog:os+container=info -XX:MaxRAMPercentage=70.0 -XX:InitialRAMPercentage=50.0"
+ENV JAVA_OPTS=""
+
+# Set maxThreads via environment (processed by startup script)
+RUN echo '#!/bin/bash' > /opt/tomcat/bin/setenv.sh && \
+    echo 'export CATALINA_OPTS="${CATALINA_OPTS} -Dtomcat.maxThreads=${TOMCAT_MAX_THREADS:-200}"' >> /opt/tomcat/bin/setenv.sh && \
+    chmod +x /opt/tomcat/bin/setenv.sh
+
+# Update server.xml to use system property for maxThreads
+RUN sed -i 's/maxThreads="[^"]*"/maxThreads="${tomcat.maxThreads}"/' /opt/tomcat/conf/server.xml
+
+EXPOSE 8080
+CMD ["/opt/tomcat/bin/catalina.sh", "run"]

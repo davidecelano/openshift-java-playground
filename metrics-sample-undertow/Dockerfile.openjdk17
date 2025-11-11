@@ -1,0 +1,11 @@
+FROM registry.access.redhat.com/ubi8/openjdk-17:1.21 AS builder
+WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+FROM registry.access.redhat.com/ubi8/openjdk-17-runtime:1.21
+COPY --from=builder /app/target/metrics-sample-undertow-1.0.0.jar /app/app.jar
+EXPOSE 8080
+ENV JAVA_OPTS="-Xlog:os+container=info -XX:MaxRAMPercentage=65.0 -XX:InitialRAMPercentage=50.0"
+CMD java $JAVA_OPTS -jar /app/app.jar

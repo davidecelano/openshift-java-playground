@@ -1,0 +1,9 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: metrics-springboot
+  labels:
+    app: metrics-springboot
+spec:
+  lookupPolicy:
+    local: false

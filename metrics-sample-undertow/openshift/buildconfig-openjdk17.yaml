@@ -1,0 +1,28 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: metrics-undertow-openjdk17
+  labels:
+    app: metrics-undertow
+    version: openjdk17
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: metrics-undertow:openjdk17
+  source:
+    type: Git
+    git:
+      uri: https://github.com/yourorg/openshift-java-playground.git
+      ref: main
+    contextDir: metrics-sample-undertow
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile.openjdk17
+      noCache: false
+      forcePull: true
+  triggers:
+    - type: ConfigChange
+    - type: ImageChange
+      imageChange: {}

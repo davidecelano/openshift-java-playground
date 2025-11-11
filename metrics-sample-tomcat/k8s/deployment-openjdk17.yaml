@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metrics-tomcat-openjdk17
+  labels:
+    app: metrics-tomcat
+    version: openjdk17
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metrics-tomcat
+      version: openjdk17
+  template:
+    metadata:
+      labels:
+        app: metrics-tomcat
+        version: openjdk17
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: app
+        image: quay.io/yourorg/metrics-tomcat:openjdk17
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: TOMCAT_MAX_THREADS
+          value: "100"
+        resources:
+          requests:
+            memory: "384Mi"
+            cpu: "250m"
+          limits:
+            memory: "768Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 40
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 5

@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metrics-wildfly-openjdk21
+  labels:
+    app: metrics-wildfly
+    version: openjdk21
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metrics-wildfly
+      version: openjdk21
+  template:
+    metadata:
+      labels:
+        app: metrics-wildfly
+        version: openjdk21
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: app
+        image: quay.io/yourorg/metrics-wildfly:openjdk21
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+        ports:
+        - containerPort: 8080
+          name: http
+        - containerPort: 9990
+          name: management
+        env:
+        - name: JBOSS_MAX_THREADS
+          value: "80"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 5

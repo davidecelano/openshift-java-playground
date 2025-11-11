@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: metrics-undertow
+  labels:
+    app: metrics-undertow
+spec:
+  selector:
+    app: metrics-undertow
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+  type: ClusterIP

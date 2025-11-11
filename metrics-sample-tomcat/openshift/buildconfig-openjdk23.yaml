@@ -1,0 +1,28 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: metrics-tomcat-openjdk23
+  labels:
+    app: metrics-tomcat
+    version: openjdk23
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: metrics-tomcat:openjdk23
+  source:
+    type: Git
+    git:
+      uri: https://github.com/yourorg/openshift-java-playground.git
+      ref: main
+    contextDir: metrics-sample-tomcat
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile.openjdk23
+      noCache: false
+      forcePull: true
+  triggers:
+    - type: ConfigChange
+    - type: ImageChange
+      imageChange: {}
