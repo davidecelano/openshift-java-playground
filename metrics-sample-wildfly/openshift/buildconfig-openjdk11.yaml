@@ -13,7 +13,7 @@ spec:
   source:
     type: Git
     git:
-      uri: https://github.com/yourorg/openshift-java-playground.git
+      uri: __REPO_URL__
       ref: main
     contextDir: metrics-sample-wildfly
   strategy:

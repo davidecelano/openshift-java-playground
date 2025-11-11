@@ -5,12 +5,23 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$SCRIPT_DIR/.."
 
+# Auto-detect Git repository URL, with override support
+if [ -z "$GIT_REPO_URL" ]; then
+  if git -C "$REPO_ROOT" rev-parse --git-dir &>/dev/null; then
+    GIT_REPO_URL=$(git -C "$REPO_ROOT" remote get-url origin 2>/dev/null || echo "")
+  fi
+fi
+GIT_REPO_URL="${GIT_REPO_URL:-https://github.com/davidecelano/openshift-java-playground.git}"
+GIT_BRANCH="${GIT_BRANCH:-main}"
+
 NAMESPACE="${NAMESPACE:-java-metrics-demo}"
 RUNTIME="${1:-all}"
 JAVA_VERSION="${2:-all}"
 
 echo "🏗️  OpenShift Build Trigger Script"
 echo "Namespace: $NAMESPACE"
+echo "Git Repository: $GIT_REPO_URL"
+echo "Git Branch: $GIT_BRANCH"
 echo "Runtime: $RUNTIME"
 echo "Java Version: $JAVA_VERSION"
 echo
@@ -63,6 +74,13 @@ trigger_build() {
     echo "   BuildConfig exists, updating..."
     oc apply -f "$REPO_ROOT/${sample_dir}/openshift/buildconfig-openjdk${version}.yaml" -n "$NAMESPACE"
   fi
+
+  # Patch Git repository URL and branch if different from manifest
+  echo "   Patching Git repository URL and branch..."
+  oc patch buildconfig "$bc_name" -n "$NAMESPACE" --type=json -p="[
+    {\"op\": \"replace\", \"path\": \"/spec/source/git/uri\", \"value\": \"$GIT_REPO_URL\"},
+    {\"op\": \"replace\", \"path\": \"/spec/source/git/ref\", \"value\": \"$GIT_BRANCH\"}
+  ]" 2>/dev/null || echo "   ⚠️  Could not patch repository URL"
 
   # Start build
   echo "   Starting build..."
