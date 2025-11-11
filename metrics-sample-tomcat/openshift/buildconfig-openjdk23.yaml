@@ -22,6 +22,13 @@ spec:
       dockerfilePath: Dockerfile.openjdk23
       noCache: false
       forcePull: true
+      buildArgs:
+        - name: BUILDER_IMAGE
+          value: registry.access.redhat.com/ubi9/openjdk-21:1.21
+        - name: RUNTIME_BASE
+          value: registry.access.redhat.com/ubi9/ubi-minimal:9.5
+        - name: TOMCAT_VERSION
+          value: "10.1.15"
   triggers:
     - type: ConfigChange
     - type: ImageChange

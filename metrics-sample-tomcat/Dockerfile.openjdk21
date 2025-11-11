@@ -1,13 +1,18 @@
-FROM registry.access.redhat.com/ubi9/openjdk-21:1.21 AS builder
+ARG BUILDER_IMAGE=registry.access.redhat.com/ubi9/openjdk-21:1.21
+ARG RUNTIME_BASE=registry.access.redhat.com/ubi9/ubi-minimal:9.5
+ARG TOMCAT_VERSION=10.1.15
+
+FROM ${BUILDER_IMAGE} AS builder
 WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.5
+FROM ${RUNTIME_BASE}
+ARG TOMCAT_VERSION
 RUN yum install -y java-21-openjdk-headless && yum clean all
-RUN curl -L https://archive.apache.org/dist/tomcat/tomcat-10/v10.1.15/bin/apache-tomcat-10.1.15.tar.gz | tar xz -C /opt && \
-    mv /opt/apache-tomcat-10.1.15 /opt/tomcat && \
+RUN curl -L https://archive.apache.org/dist/tomcat/tomcat-10/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz | tar xz -C /opt && \
+    mv /opt/apache-tomcat-${TOMCAT_VERSION} /opt/tomcat && \
     rm -rf /opt/tomcat/webapps/*
 
 COPY --from=builder /app/target/metrics.war /opt/tomcat/webapps/ROOT.war

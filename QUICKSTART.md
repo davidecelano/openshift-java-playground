@@ -69,20 +69,44 @@ If you prefer building locally and pushing to external registry:
 # 1. Update registry references
 ./scripts/update-image-refs.sh quay.io/yourorg
 
-# 2. Build all images locally
+# 2. Build all images locally (with optional version overrides)
 export REGISTRY=quay.io/yourorg
 ./scripts/build-all.sh
 
-# 3. Push to registry
+# 3. Override specific versions for testing
+BUILDER_IMAGE_17=registry.../openjdk-17:1.22 \
+TOMCAT_VERSION=10.1.16 \
+REGISTRY=quay.io/yourorg \
+./scripts/build-all.sh
+
+# 4. Push to registry
 ./scripts/push-all.sh
 
-# 4. Deploy
+# 5. Deploy
 ./scripts/deploy-all.sh
 ```
 
 **Note**: GitHub Actions workflow is now manual-dispatch only. Trigger via:
 ```bash
 gh workflow run build-metrics-samples.yml
+```
+
+### Version Override Examples
+
+Test different image versions without modifying files:
+
+```bash
+# Test newer OpenJDK patch version
+BUILDER_IMAGE_21=registry.../openjdk-21:1.22 \
+RUNTIME_IMAGE_21=registry.../openjdk-21-runtime:1.22 \
+./scripts/build-all.sh
+
+# Test different Tomcat version
+TOMCAT_VERSION=10.1.16 ./scripts/build-all.sh
+
+# Test newer WildFly release
+WILDFLY_IMAGE_17=quay.io/wildfly/wildfly:31.0.2.Final-jdk17 \
+./scripts/build-all.sh
 ```
 
 ## Verify Deployment

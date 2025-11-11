@@ -63,6 +63,26 @@ All container images use pinned versions for reproducibility. See [`VERSIONS.md`
 
 **Never use `:latest` tags in production scenarios.**
 
+### Dynamic Version Overrides
+
+Override image versions per-build without modifying files:
+
+```bash
+# Override OpenJDK builder image
+BUILDER_IMAGE_17=registry.../openjdk-17:1.22 ./scripts/build-all.sh
+
+# Override Tomcat version
+TOMCAT_VERSION=10.1.16 ./scripts/build-all.sh
+
+# Override multiple versions
+BUILDER_IMAGE_17=registry.../openjdk-17:1.22 \
+RUNTIME_IMAGE_17=registry.../openjdk-17-runtime:1.22 \
+WILDFLY_IMAGE_17=quay.io/wildfly/wildfly:31.0.2.Final-jdk17 \
+./scripts/build-all.sh
+```
+
+All Dockerfiles use `ARG` directives with defaults from `VERSIONS.md`, enabling flexible version management for experiments and testing.
+
 ### Access Metrics
 ```bash
 # Port-forward to a pod

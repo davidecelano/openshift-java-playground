@@ -55,17 +55,70 @@ From [Red Hat OpenJDK Support Policy](https://access.redhat.com/articles/1299013
 
 ## Update Procedure
 
-When updating image versions:
+### Standard Update (Modify Defaults)
+
+When updating image versions across the repository:
 
 1. Check [Red Hat Container Catalog](https://catalog.redhat.com/software/containers/search) for new releases
 2. Review release notes and security advisories
 3. Update version references in this file
-4. Update all Dockerfiles (16 files across 4 runtimes)
-5. Update BuildConfig manifests in `openshift/` directories
+4. Update default ARG values in all Dockerfiles (16 files across 4 runtimes)
+5. Update buildArgs values in BuildConfig manifests (`openshift/buildconfig-*.yaml`)
 6. Test builds locally: `./scripts/build-all.sh`
 7. Test deployments: `./scripts/deploy-all.sh`
 8. Run baseline captures: `./scripts/capture-baselines.sh`
 9. Commit changes with clear version update message
+
+### Dynamic Override (Per-Build)
+
+Override versions without modifying files using build arguments:
+
+**Local Builds (Podman/Docker)**:
+```bash
+# Override single runtime
+cd metrics-sample-undertow
+podman build -f Dockerfile.openjdk17 \
+  --build-arg BUILDER_IMAGE=registry.../openjdk-17:1.22 \
+  --build-arg RUNTIME_IMAGE=registry.../openjdk-17-runtime:1.22 \
+  -t myimage:tag .
+
+# Override via build-all.sh script
+BUILDER_IMAGE_17=registry.../openjdk-17:1.22 \
+RUNTIME_IMAGE_17=registry.../openjdk-17-runtime:1.22 \
+./scripts/build-all.sh
+
+# Override Tomcat version
+TOMCAT_VERSION=10.1.16 ./scripts/build-all.sh
+
+# Override WildFly image
+WILDFLY_IMAGE_21=quay.io/wildfly/wildfly:31.0.2.Final-jdk21 \
+./scripts/build-all.sh
+```
+
+**OpenShift Builds**:
+```bash
+# Edit BuildConfig to change buildArgs values
+oc edit buildconfig metrics-undertow-openjdk17
+
+# Or patch specific build args
+oc patch buildconfig metrics-undertow-openjdk17 --type=json -p='[
+  {"op": "replace", "path": "/spec/strategy/dockerStrategy/buildArgs/0/value", 
+   "value": "registry.access.redhat.com/ubi8/openjdk-17:1.22"}
+]'
+
+# Trigger build with updated args
+oc start-build metrics-undertow-openjdk17
+```
+
+**Available Build Arguments**:
+
+| Runtime | Arg Name | Description | Example Override |
+|---------|----------|-------------|------------------|
+| All | `BUILDER_IMAGE` | Maven build stage base | `ubi8/openjdk-17:1.22` |
+| Undertow, Spring Boot | `RUNTIME_IMAGE` | Application runtime base | `ubi8/openjdk-17-runtime:1.22` |
+| Tomcat | `RUNTIME_BASE` | Minimal UBI base | `ubi9/ubi-minimal:9.6` |
+| Tomcat | `TOMCAT_VERSION` | Apache Tomcat version | `10.1.16` |
+| WildFly | `WILDFLY_IMAGE` | WildFly runtime image | `wildfly:31.0.2.Final-jdk17` |
 
 ## Security Considerations
 

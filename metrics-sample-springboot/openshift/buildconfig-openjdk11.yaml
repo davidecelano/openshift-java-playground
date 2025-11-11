@@ -22,6 +22,11 @@ spec:
       dockerfilePath: Dockerfile.openjdk11
       noCache: false
       forcePull: true
+      buildArgs:
+        - name: BUILDER_IMAGE
+          value: registry.access.redhat.com/ubi8/openjdk-11:1.21
+        - name: RUNTIME_IMAGE
+          value: registry.access.redhat.com/ubi8/openjdk-11-runtime:1.21
   triggers:
     - type: ConfigChange
     - type: ImageChange

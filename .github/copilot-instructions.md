@@ -12,6 +12,8 @@ Example dirs: `metrics/`, `java-options/`, `cgroups-compat/`, `tuning-cgroups-v2
 
 **Version Pinning**: All base images use explicit version tags (never `:latest`). See `VERSIONS.md` for current image versions and update procedures.
 
+**Dynamic Version Management**: All Dockerfiles use `ARG` directives enabling version overrides per-build without file modifications. BuildConfigs include `buildArgs` for OpenShift version control. Use environment variables (e.g., `BUILDER_IMAGE_17=...`) or `--build-arg` flags for local builds. See `versions.env.example` for configuration template.
+
 ## 3. Standard Scenario Workflow
 1. Declare container limits (memory, CPU) & Java version in README.
 2. Capture baseline: `java -Xlog:os+container=info -XX:+PrintFlagsFinal -version > baseline.txt`.

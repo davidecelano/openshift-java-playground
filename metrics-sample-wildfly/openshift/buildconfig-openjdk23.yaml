@@ -22,6 +22,11 @@ spec:
       dockerfilePath: Dockerfile.openjdk23
       noCache: false
       forcePull: true
+      buildArgs:
+        - name: BUILDER_IMAGE
+          value: registry.access.redhat.com/ubi9/openjdk-21:1.21
+        - name: WILDFLY_IMAGE
+          value: quay.io/wildfly/wildfly:31.0.1.Final-jdk21
   triggers:
     - type: ConfigChange
     - type: ImageChange
