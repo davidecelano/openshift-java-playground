@@ -75,12 +75,24 @@ trigger_build() {
     oc apply -f "$REPO_ROOT/${sample_dir}/openshift/buildconfig-openjdk${version}.yaml" -n "$NAMESPACE"
   fi
 
-  # Patch Git repository URL and branch if different from manifest
+  # Patch Git repository URL and branch (critical for __REPO_URL__ placeholder)
   echo "   Patching Git repository URL and branch..."
-  oc patch buildconfig "$bc_name" -n "$NAMESPACE" --type=json -p="[
+  if ! oc patch buildconfig "$bc_name" -n "$NAMESPACE" --type=json -p="[
     {\"op\": \"replace\", \"path\": \"/spec/source/git/uri\", \"value\": \"$GIT_REPO_URL\"},
     {\"op\": \"replace\", \"path\": \"/spec/source/git/ref\", \"value\": \"$GIT_BRANCH\"}
-  ]" 2>/dev/null || echo "   ⚠️  Could not patch repository URL"
+  ]"; then
+    echo "   ❌ ERROR: Failed to patch BuildConfig with Git repository URL!"
+    echo "   BuildConfig may have __REPO_URL__ placeholder which will cause build failures."
+    exit 1
+  fi
+  
+  # Verify the patch was applied
+  ACTUAL_URI=$(oc get buildconfig "$bc_name" -n "$NAMESPACE" -o jsonpath='{.spec.source.git.uri}')
+  if [ "$ACTUAL_URI" = "__REPO_URL__" ]; then
+    echo "   ❌ ERROR: BuildConfig still has __REPO_URL__ placeholder after patching!"
+    exit 1
+  fi
+  echo "   ✅ Git repository set to: $ACTUAL_URI"
 
   # Start build
   echo "   Starting build..."

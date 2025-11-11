@@ -2,13 +2,13 @@ ARG BUILDER_IMAGE=registry.access.redhat.com/ubi8/openjdk-11:1.21
 ARG WILDFLY_IMAGE=quay.io/wildfly/wildfly:27.0.1.Final-jdk11
 
 FROM ${BUILDER_IMAGE} AS builder
-WORKDIR /app
+WORKDIR /tmp/src
 COPY pom.xml .
 COPY src ./src
 RUN mvn clean package -DskipTests
 
 FROM ${WILDFLY_IMAGE}
-COPY --from=builder /app/target/metrics.war /opt/jboss/wildfly/standalone/deployments/
+COPY --from=builder /tmp/src/target/metrics.war /opt/jboss/wildfly/standalone/deployments/
 
 # Configure WildFly for metrics
 RUN /opt/jboss/wildfly/bin/jboss-cli.sh --commands="embed-server --std-out=echo,\

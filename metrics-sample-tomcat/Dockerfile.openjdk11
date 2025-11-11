@@ -3,7 +3,7 @@ ARG RUNTIME_BASE=registry.access.redhat.com/ubi8/ubi-minimal:8.10
 ARG TOMCAT_VERSION=10.1.15
 
 FROM ${BUILDER_IMAGE} AS builder
-WORKDIR /app
+WORKDIR /tmp/src
 COPY pom.xml .
 COPY src ./src
 RUN mvn clean package -DskipTests
@@ -15,7 +15,7 @@ RUN curl -L https://archive.apache.org/dist/tomcat/tomcat-10/v${TOMCAT_VERSION}/
     mv /opt/apache-tomcat-${TOMCAT_VERSION} /opt/tomcat && \
     rm -rf /opt/tomcat/webapps/*
 
-COPY --from=builder /app/target/metrics.war /opt/tomcat/webapps/ROOT.war
+COPY --from=builder /tmp/src/target/metrics.war /opt/tomcat/webapps/ROOT.war
 
 # Configure Tomcat for container
 ENV CATALINA_OPTS="-Xlog:os+container=info -XX:MaxRAMPercentage=70.0 -XX:InitialRAMPercentage=50.0"
