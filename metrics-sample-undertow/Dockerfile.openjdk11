@@ -5,7 +5,7 @@ FROM ${BUILDER_IMAGE} AS builder
 WORKDIR /tmp/build
 COPY pom.xml .
 COPY src .
-RUN mvn clean package -DskipTests
+RUN chmod 0777 /tmp/build && mvn clean package -DskipTests
 
 FROM ${RUNTIME_IMAGE}
 COPY --from=builder /tmp/build/target/metrics-sample-undertow-1.0.0.jar /app/app.jar
