@@ -2,13 +2,13 @@ ARG BUILDER_IMAGE=registry.access.redhat.com/ubi8/openjdk-17:1.21
 ARG RUNTIME_IMAGE=registry.access.redhat.com/ubi8/openjdk-17-runtime:1.21
 
 FROM ${BUILDER_IMAGE} AS builder
-WORKDIR /tmp/src
+WORKDIR /tmp/build
 COPY pom.xml .
-COPY src ./src
+COPY src .
 RUN mvn clean package -DskipTests
 
 FROM ${RUNTIME_IMAGE}
-COPY --from=builder /tmp/src/target/metrics-sample-undertow-1.0.0.jar /app/app.jar
+COPY --from=builder /tmp/build/target/metrics-sample-undertow-1.0.0.jar /app/app.jar
 EXPOSE 8080
 ENV JAVA_OPTS="-Xlog:os+container=info -XX:MaxRAMPercentage=65.0 -XX:InitialRAMPercentage=50.0"
 CMD java $JAVA_OPTS -jar /app/app.jar
