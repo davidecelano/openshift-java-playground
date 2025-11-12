@@ -2,13 +2,13 @@ ARG BUILDER_IMAGE=registry.access.redhat.com/ubi8/openjdk-17:1.21
 ARG WILDFLY_IMAGE=quay.io/wildfly/wildfly:38.0.0.Final-jdk17
 
 FROM ${BUILDER_IMAGE} AS builder
-WORKDIR /tmp/src
-COPY pom.xml .
-COPY src ./src
+WORKDIR /tmp/build
+COPY --chown=default:root pom.xml .
+COPY --chown=default:root src ./src
 RUN mvn clean package -DskipTests
 
 FROM ${WILDFLY_IMAGE}
-COPY --from=builder /tmp/src/target/metrics.war /opt/jboss/wildfly/standalone/deployments/
+COPY --from=builder /tmp/build/target/metrics.war /opt/jboss/wildfly/standalone/deployments/
 
 # Configure WildFly for metrics
 RUN echo 'embed-server --std-out=echo' > /tmp/configure-micrometer.cli && \
