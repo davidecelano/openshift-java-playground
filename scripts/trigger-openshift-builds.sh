@@ -66,6 +66,12 @@ trigger_build() {
 
   echo "🔨 Processing ${bc_name}..."
 
+  # Check if BuildConfig file exists
+  if [ ! -f "$REPO_ROOT/${sample_dir}/openshift/buildconfig-openjdk${version}.yaml" ]; then
+    echo "   ⚠️  BuildConfig file not found, skipping..."
+    return 0
+  fi
+
   # Create/update BuildConfig
   if ! oc get buildconfig "$bc_name" -n "$NAMESPACE" &>/dev/null; then
     echo "   Creating BuildConfig..."
