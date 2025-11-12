@@ -1,5 +1,5 @@
-ARG BUILDER_IMAGE=registry.access.redhat.com/ubi8/openjdk-11:1.21
-ARG RUNTIME_IMAGE=registry.access.redhat.com/ubi8/openjdk-11-runtime:1.21
+ARG BUILDER_IMAGE=registry.access.redhat.com/ubi9/openjdk-11:1.21
+ARG RUNTIME_IMAGE=registry.access.redhat.com/ubi9/openjdk-11-runtime:1.21
 
 FROM ${BUILDER_IMAGE} AS builder
 USER 0

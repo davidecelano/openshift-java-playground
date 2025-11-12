@@ -24,9 +24,9 @@ spec:
       forcePull: true
       buildArgs:
         - name: BUILDER_IMAGE
-          value: registry.access.redhat.com/ubi8/openjdk-17:1.21
+          value: registry.access.redhat.com/ubi9/openjdk-17:1.21
         - name: RUNTIME_IMAGE
-          value: registry.access.redhat.com/ubi8/openjdk-17-runtime:1.21
+          value: registry.access.redhat.com/ubi9/openjdk-17-runtime:1.21
   triggers:
     - type: ConfigChange
     - type: ImageChange
