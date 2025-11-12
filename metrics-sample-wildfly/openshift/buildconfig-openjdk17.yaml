@@ -13,7 +13,7 @@ spec:
   source:
     type: Git
     git:
-      uri: __REPO_URL__
+      uri: https://github.com/davidecelano/openshift-java-playground.git
       ref: main
     contextDir: metrics-sample-wildfly
   strategy:
@@ -26,7 +26,7 @@ spec:
         - name: BUILDER_IMAGE
           value: registry.access.redhat.com/ubi8/openjdk-17:1.21
         - name: WILDFLY_IMAGE
-          value: quay.io/wildfly/wildfly:31.0.1.Final-jdk17
+          value: quay.io/wildfly/wildfly:38.0.0.Final-jdk17
   triggers:
     - type: ConfigChange
     - type: ImageChange
