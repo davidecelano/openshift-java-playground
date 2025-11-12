@@ -1,5 +1,5 @@
 ARG BUILDER_IMAGE=registry.access.redhat.com/ubi9/openjdk-21:1.21
-ARG WILDFLY_IMAGE=quay.io/wildfly/wildfly:38.0.0.Final-jdk21
+ARG WILDFLY_IMAGE=quay.io/wildfly/wildfly:31.0.1.Final-jdk21
 
 FROM ${BUILDER_IMAGE} AS builder
 USER 0

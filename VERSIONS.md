@@ -16,10 +16,12 @@ All samples use Red Hat Universal Base Images (UBI) with pinned versions to ensu
 
 | Java Version | Base OS | Builder Image | Runtime Image | Status |
 |--------------|---------|---------------|---------------|--------|
-| OpenJDK 11 | UBI 8 | `registry.access.redhat.com/ubi8/openjdk-11:1.21` | `registry.access.redhat.com/ubi8/openjdk-11-runtime:1.21` | **DEPRECATED** - Migrate to 17/21 |
-| OpenJDK 17 | UBI 8 | `registry.access.redhat.com/ubi8/openjdk-17:1.21` | `registry.access.redhat.com/ubi8/openjdk-17-runtime:1.21` | **Stable LTS** |
+| OpenJDK 11 | UBI 8 (current) / UBI 9 (available, deprecated) | `registry.access.redhat.com/ubi8/openjdk-11:1.21` | `registry.access.redhat.com/ubi8/openjdk-11-runtime:1.21` | **DEPRECATED** - EOL Oct 31, 2024 (ELS to Oct 31, 2027) |
+| OpenJDK 17 | UBI 8 (current) / UBI 9 (GA, recommended) | `registry.access.redhat.com/ubi8/openjdk-17:1.21` | `registry.access.redhat.com/ubi8/openjdk-17-runtime:1.21` | **Stable LTS** - UBI 9 Generally Available |
 | OpenJDK 21 | UBI 9 | `registry.access.redhat.com/ubi9/openjdk-21:1.21` | `registry.access.redhat.com/ubi9/openjdk-21-runtime:1.21` | **Latest LTS (Recommended)** |
-| OpenJDK 23 | UBI 9 | `registry.access.redhat.com/ubi9/openjdk-21:1.21` | `registry.access.redhat.com/ubi9/openjdk-21-runtime:1.21` | Uses Java 21 base (no native 23 image) |
+| OpenJDK 23 | UBI 9 | `registry.access.redhat.com/ubi9/openjdk-21:1.21` | `registry.access.redhat.com/ubi9/openjdk-21-runtime:1.21` | Uses Java 21 base (Red Hat provides no native OpenJDK 23 image) |
+
+**Migration Note**: As of November 2025, OpenJDK 11 and 17 are available on both UBI 8 and UBI 9. UBI 9 images are Generally Available and recommended for new deployments. This repository currently uses UBI 8 images for Java 11/17 to maintain compatibility with existing scenarios, but migration to UBI 9 is planned.
 
 ### Special Cases
 
@@ -27,14 +29,15 @@ All samples use Red Hat Universal Base Images (UBI) with pinned versions to ensu
 Tomcat samples use a two-stage approach:
 1. **Builder**: Standard UBI OpenJDK image for Maven builds
 2. **Runtime**: `registry.access.redhat.com/ubi9/ubi-minimal:9.5` + manual JDK installation for smaller footprint
+3. **Version**: Tomcat 10.1.49
 
 #### WildFly Samples
 WildFly samples use:
 1. **Builder**: Standard UBI OpenJDK image for Maven builds
 2. **Runtime**: Official WildFly images from Quay.io with version pinning:
-   - Java 11: `quay.io/wildfly/wildfly:27.0.1.Final-jdk11`
-   - Java 17: `quay.io/wildfly/wildfly:31.0.1.Final-jdk17`
-   - Java 21/23: `quay.io/wildfly/wildfly:31.0.1.Final-jdk21`
+   - Java 11: `quay.io/wildfly/wildfly:34.0.1.Final-jdk11`
+   - Java 17: `quay.io/wildfly/wildfly:38.0.0.Final-jdk17`
+   - Java 21/23: `quay.io/wildfly/wildfly:38.0.0.Final-jdk21`
 
 ## Red Hat Container Catalog References
 
