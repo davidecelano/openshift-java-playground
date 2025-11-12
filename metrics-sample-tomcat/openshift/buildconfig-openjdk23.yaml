@@ -28,7 +28,7 @@ spec:
         - name: RUNTIME_BASE
           value: registry.access.redhat.com/ubi9/ubi-minimal:9.5
         - name: TOMCAT_VERSION
-          value: "10.1.15"
+          value: "10.1.49"
   triggers:
     - type: ConfigChange
     - type: ImageChange

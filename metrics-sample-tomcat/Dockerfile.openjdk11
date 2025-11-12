@@ -1,6 +1,6 @@
-ARG BUILDER_IMAGE=registry.access.redhat.com/ubi8/openjdk-11:1.21
-ARG RUNTIME_BASE=registry.access.redhat.com/ubi8/ubi-minimal:8.10
-ARG TOMCAT_VERSION=10.1.15
+ARG BUILDER_IMAGE=registry.access.redhat.com/ubi9/openjdk-11:1.21
+ARG RUNTIME_BASE=registry.access.redhat.com/ubi9/ubi-minimal:9.5
+ARG TOMCAT_VERSION=10.1.49
 
 FROM ${BUILDER_IMAGE} AS builder
 USER 0
@@ -13,7 +13,7 @@ RUN mvn clean package -DskipTests -Djava.version=11
 
 FROM ${RUNTIME_BASE}
 ARG TOMCAT_VERSION
-RUN yum install -y java-11-openjdk-headless && yum clean all
+RUN microdnf install -y java-11-openjdk-headless tar gzip && microdnf clean all
 RUN curl -L https://archive.apache.org/dist/tomcat/tomcat-10/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz | tar xz -C /opt && \
     mv /opt/apache-tomcat-${TOMCAT_VERSION} /opt/tomcat && \
     rm -rf /opt/tomcat/webapps/*
