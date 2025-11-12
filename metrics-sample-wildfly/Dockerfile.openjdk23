@@ -10,11 +10,14 @@ RUN mvn clean package -DskipTests
 FROM ${WILDFLY_IMAGE}
 COPY --from=builder /tmp/src/target/metrics.war /opt/jboss/wildfly/standalone/deployments/
 
-RUN /opt/jboss/wildfly/bin/jboss-cli.sh --commands="embed-server --std-out=echo,\
-/extension=org.wildfly.extension.micrometer:add,\
-/subsystem=micrometer:add(exposed-subsystems=[\"*\"]),\
-/subsystem=micrometer/registry=prometheus:add(context=\"/metrics\"\,security-enabled=false),\
-stop-embedded-server"
+# Configure WildFly for metrics
+RUN echo 'embed-server --std-out=echo' > /tmp/configure-micrometer.cli && \
+    echo '/extension=org.wildfly.extension.micrometer:add' >> /tmp/configure-micrometer.cli && \
+    echo '/subsystem=micrometer:add(exposed-subsystems=["*"])' >> /tmp/configure-micrometer.cli && \
+    echo '/subsystem=micrometer/registry=prometheus:add(context="/metrics",security-enabled=false)' >> /tmp/configure-micrometer.cli && \
+    echo 'stop-embedded-server' >> /tmp/configure-micrometer.cli && \
+    /opt/jboss/wildfly/bin/jboss-cli.sh --file=/tmp/configure-micrometer.cli && \
+    rm /tmp/configure-micrometer.cli
 
 ENV JAVA_OPTS="-Xlog:os+container=info -XX:MaxRAMPercentage=65.0 -XX:InitialRAMPercentage=50.0"
 ENV JBOSS_MAX_THREADS=80
