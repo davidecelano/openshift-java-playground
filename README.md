@@ -61,6 +61,8 @@ curl http://localhost:8080/actuator/prometheus | grep jvm_memory
 | **[🔬 Testing & Validation](TESTING.md)** | Validate builds, troubleshoot issues, run performance tests |
 | **[🔧 Implementation Details](IMPLEMENTATION.md)** | Technical architecture, design decisions, runtime comparisons |
 | **[📊 Version Matrix](VERSIONS.md)** | Image versions, compatibility, update procedures |
+| **[🔄 Version Management](VERSION_MANAGEMENT.md)** | Update procedures, testing checklist, rollback strategies |
+| **[📝 Changelog](CHANGELOG.md)** | Release history, breaking changes, upgrade guides |
 | **[🤝 Contributing](CONTRIBUTING.md)** | How to add samples, scenarios, and improve documentation |
 
 ## 🏗️ Architecture
@@ -269,15 +271,20 @@ This project is provided as-is for educational and experimental purposes. Indivi
 
 ## 📊 Project Status
 
-![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
-![Documentation](https://img.shields.io/badge/docs-comprehensive-blue)
-![Validation](https://img.shields.io/badge/validation-100%25-success)
-![Java Versions](https://img.shields.io/badge/java-11%20%7C%2017%20%7C%2021%20%7C%2023-orange)
-![Base Image](https://img.shields.io/badge/base-UBI%209-red)
+![Build Status](https://img.shields.io/badge/build-passing-brightgreen?style=flat-square)
+![Documentation](https://img.shields.io/badge/docs-comprehensive-blue?style=flat-square)
+![Validation](https://img.shields.io/badge/tests-38%2F38_passing-success?style=flat-square)
+![Java Versions](https://img.shields.io/badge/java-11_%7C_17_%7C_21_%7C_23-orange?style=flat-square)
+![Base Image](https://img.shields.io/badge/base-UBI_9-red?style=flat-square)
+![OpenShift](https://img.shields.io/badge/openshift-4.x-EE0000?style=flat-square&logo=redhatopenshift)
+![Kubernetes](https://img.shields.io/badge/kubernetes-1.24+-326CE5?style=flat-square&logo=kubernetes&logoColor=white)
+![License](https://img.shields.io/badge/license-Apache_2.0-blue?style=flat-square)
 
+**Version**: 2.0.0  
 **Last Updated**: November 2025  
 **Total Configurations**: 15 (Undertow 4, Spring Boot 3, Tomcat 4, WildFly 4)  
-**Test Coverage**: 100% (38/38 tests passing)
+**Test Coverage**: 100% (38/38 tests passing)  
+**Documentation**: 14 files, ~3,200 lines
 
 ---
 

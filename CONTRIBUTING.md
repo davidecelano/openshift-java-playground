@@ -1,6 +1,6 @@
 # Contributing to OpenShift Java Playground
 
-📚 **Documentation**: [README](README.md) | [Quick Start](QUICKSTART.md) | [Deployment](DEPLOYMENT.md) | [Testing](TESTING.md) | [Implementation](IMPLEMENTATION.md) | [Versions](VERSIONS.md)
+📚 **Documentation**: [README](README.md) | [Quick Start](QUICKSTART.md) | [Deployment](DEPLOYMENT.md) | [Testing](TESTING.md) | [Implementation](IMPLEMENTATION.md) | [Versions](VERSIONS.md) | [Version Management](VERSION_MANAGEMENT.md)
 
 ---
 

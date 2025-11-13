@@ -1,0 +1,93 @@
+name: Documentation Issue
+description: Report an issue with documentation
+title: "[Docs]: "
+labels: ["documentation", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve our documentation!
+
+  - type: dropdown
+    id: doc-file
+    attributes:
+      label: Documentation File
+      description: Which documentation file has the issue?
+      options:
+        - README.md
+        - QUICKSTART.md
+        - DEPLOYMENT.md
+        - TESTING.md
+        - IMPLEMENTATION.md
+        - VERSIONS.md
+        - VERSION_MANAGEMENT.md
+        - CONTRIBUTING.md
+        - CHANGELOG.md
+        - Sample README (Undertow)
+        - Sample README (Spring Boot)
+        - Sample README (Tomcat)
+        - Sample README (WildFly)
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: Issue Type
+      description: What kind of documentation issue is this?
+      options:
+        - Inaccurate information
+        - Missing information
+        - Confusing explanation
+        - Broken link
+        - Typo/grammar
+        - Outdated content
+        - Example doesn't work
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue-description
+    attributes:
+      label: Issue Description
+      description: Describe the documentation issue
+      placeholder: On page X, section Y says... but it should say...
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-content
+    attributes:
+      label: Current Content
+      description: Paste or describe the current documentation content (if applicable)
+      render: markdown
+    validations:
+      required: false
+
+  - type: textarea
+    id: suggested-content
+    attributes:
+      label: Suggested Improvement
+      description: What should the documentation say instead?
+      render: markdown
+    validations:
+      required: false
+
+  - type: input
+    id: location
+    attributes:
+      label: Location
+      description: Line numbers or section heading (if known)
+      placeholder: "e.g., Line 123, or 'Quick Start > Prerequisites'"
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Any other relevant information
+    validations:
+      required: false
