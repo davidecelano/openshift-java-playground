@@ -21,7 +21,34 @@ oc whoami && echo "✓ Connected to cluster" || echo "✗ Login to cluster first
 podman login quay.io && echo "✓ Registry authenticated" || echo "✗ Login to registry"
 ```
 
-## 5-Minute Local Test
+
+## Using Custom Namespace & Variables
+
+You can deploy to any OpenShift namespace and customize build parameters using environment variables:
+
+```bash
+# Use a custom namespace (default is java-metrics-demo)
+export NAMESPACE=my-metrics-namespace
+
+# Optionally override Git repo/branch for BuildConfigs
+export GIT_REPO_URL=https://github.com/yourorg/your-fork.git
+export GIT_BRANCH=my-feature-branch
+
+# Use with scripts:
+cd scripts
+NAMESPACE=$NAMESPACE ./trigger-openshift-builds.sh
+NAMESPACE=$NAMESPACE ./deploy-all.sh
+```
+
+You can also pass NAMESPACE inline for a one-off run:
+
+```bash
+NAMESPACE=my-metrics-namespace ./trigger-openshift-builds.sh
+NAMESPACE=my-metrics-namespace ./deploy-all.sh
+```
+
+All scripts default to `java-metrics-demo` if NAMESPACE is not set.
+
 
 Test a single sample locally before deploying:
 
@@ -41,29 +68,31 @@ curl http://localhost:8080/actuator/prometheus | grep jvm_memory
 ```
 
 
+oc get builds -w -n java-metrics-demo
+
 ## 10-Minute OpenShift-Native Deploy
 
-Build and deploy all samples using OpenShift BuildConfigs (recommended):
+Build and deploy all samples using OpenShift BuildConfigs (recommended). You can use a custom namespace as shown above:
 
 ```bash
 # 1. Ensure you're logged into OpenShift
 oc whoami
 
-# 2. Create namespace (if needed)
-oc new-project java-metrics-demo
+# 2. (Optional) Set your namespace
+export NAMESPACE=my-metrics-namespace  # or use default java-metrics-demo
 
 # 3. Trigger OpenShift builds from Git source
 cd scripts
 ./trigger-openshift-builds.sh
 
 # 4. Wait for builds to complete (monitor in another terminal)
-oc get builds -w -n java-metrics-demo
+oc get builds -w -n "$NAMESPACE"
 
 # 5. Deploy all metrics samples to cluster
 ./deploy-all.sh
 
 # 6. Watch deployment
-oc get pods -n java-metrics-demo -w
+oc get pods -n "$NAMESPACE" -w
 ```
 
 **About `deploy-all.sh`:**
