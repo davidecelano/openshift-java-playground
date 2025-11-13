@@ -15,6 +15,7 @@ BUILDER_IMAGE_21="${BUILDER_IMAGE_21:-}"
 RUNTIME_IMAGE_11="${RUNTIME_IMAGE_11:-}"
 RUNTIME_IMAGE_17="${RUNTIME_IMAGE_17:-}"
 RUNTIME_IMAGE_21="${RUNTIME_IMAGE_21:-}"
+RUNTIME_BASE="${RUNTIME_BASE:-}"
 WILDFLY_IMAGE_11="${WILDFLY_IMAGE_11:-}"
 WILDFLY_IMAGE_17="${WILDFLY_IMAGE_17:-}"
 WILDFLY_IMAGE_21="${WILDFLY_IMAGE_21:-}"
@@ -56,6 +57,9 @@ build_image() {
   # Add Tomcat version if set
   [[ -n "$TOMCAT_VERSION" ]] && build_args+=(--build-arg "TOMCAT_VERSION=$TOMCAT_VERSION")
   
+  # Add runtime base if set (used by Tomcat)
+  [[ -n "$RUNTIME_BASE" ]] && build_args+=(--build-arg "RUNTIME_BASE=$RUNTIME_BASE")
+  
   # Build command
   podman build -f "Dockerfile.openjdk${version}" "${build_args[@]}" -t "${image}" .
   echo "  ✓ ${image}"
@@ -75,6 +79,14 @@ done
 
 echo "Build complete! Run ./scripts/push-all.sh to push images."
 echo ""
+echo "Default versions used (from Dockerfiles):"
+echo "  Java 11/17/21/23: UBI 9 (1.21)"
+echo "  Tomcat: 10.1.49"
+echo "  WildFly Java 11: 34.0.1.Final"
+echo "  WildFly Java 17/21/23: 38.0.0.Final"
+echo ""
 echo "To override versions, set environment variables before running:"
 echo "  BUILDER_IMAGE_17=registry.../openjdk-17:1.22 ./scripts/build-all.sh"
-echo "  TOMCAT_VERSION=10.1.16 ./scripts/build-all.sh"
+echo "  RUNTIME_BASE=registry.../ubi-minimal:9.6 ./scripts/build-all.sh"
+echo "  TOMCAT_VERSION=10.1.50 ./scripts/build-all.sh"
+echo "  WILDFLY_IMAGE_21=quay.io/wildfly/wildfly:38.0.1.Final-jdk21 ./scripts/build-all.sh"

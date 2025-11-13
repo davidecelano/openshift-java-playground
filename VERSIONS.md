@@ -16,12 +16,12 @@ All samples use Red Hat Universal Base Images (UBI) with pinned versions to ensu
 
 | Java Version | Base OS | Builder Image | Runtime Image | Status |
 |--------------|---------|---------------|---------------|--------|
-| OpenJDK 11 | UBI 8 (current) / UBI 9 (available, deprecated) | `registry.access.redhat.com/ubi8/openjdk-11:1.21` | `registry.access.redhat.com/ubi8/openjdk-11-runtime:1.21` | **DEPRECATED** - EOL Oct 31, 2024 (ELS to Oct 31, 2027) |
-| OpenJDK 17 | UBI 8 (current) / UBI 9 (GA, recommended) | `registry.access.redhat.com/ubi8/openjdk-17:1.21` | `registry.access.redhat.com/ubi8/openjdk-17-runtime:1.21` | **Stable LTS** - UBI 9 Generally Available |
+| OpenJDK 11 | UBI 9 | `registry.access.redhat.com/ubi9/openjdk-11:1.21` | `registry.access.redhat.com/ubi9/openjdk-11-runtime:1.21` | **DEPRECATED** - EOL Oct 31, 2024 (ELS to Oct 31, 2027) |
+| OpenJDK 17 | UBI 9 | `registry.access.redhat.com/ubi9/openjdk-17:1.21` | `registry.access.redhat.com/ubi9/openjdk-17-runtime:1.21` | **Stable LTS** |
 | OpenJDK 21 | UBI 9 | `registry.access.redhat.com/ubi9/openjdk-21:1.21` | `registry.access.redhat.com/ubi9/openjdk-21-runtime:1.21` | **Latest LTS (Recommended)** |
 | OpenJDK 23 | UBI 9 | `registry.access.redhat.com/ubi9/openjdk-21:1.21` | `registry.access.redhat.com/ubi9/openjdk-21-runtime:1.21` | Uses Java 21 base (Red Hat provides no native OpenJDK 23 image) |
 
-**Migration Note**: As of November 2025, OpenJDK 11 and 17 are available on both UBI 8 and UBI 9. UBI 9 images are Generally Available and recommended for new deployments. This repository currently uses UBI 8 images for Java 11/17 to maintain compatibility with existing scenarios, but migration to UBI 9 is planned.
+**Migration Status**: As of November 2025, all Java versions (11, 17, 21, 23) have been migrated to UBI 9. This provides a consistent base OS platform across all OpenJDK versions with enhanced cgroups v2 support and security updates.
 
 ### Special Cases
 
@@ -41,8 +41,8 @@ WildFly samples use:
 
 ## Red Hat Container Catalog References
 
-- **OpenJDK 11**: https://catalog.redhat.com/software/containers/ubi8/openjdk-11/5dd6a4b45a13461646f677f4
-- **OpenJDK 17**: https://catalog.redhat.com/software/containers/ubi8/openjdk-17/61ee7c26ed74fbb5f6c800e7
+- **OpenJDK 11**: https://catalog.redhat.com/software/containers/ubi9/openjdk-11/6501ab0b6f4c5dfe6ec618ad
+- **OpenJDK 17**: https://catalog.redhat.com/software/containers/ubi9/openjdk-17/61ee7c26ed74fbb5f6c800e7
 - **OpenJDK 21**: https://catalog.redhat.com/software/containers/ubi9/openjdk-21/6501574c5a13467447f8e844
 - **UBI Minimal**: https://catalog.redhat.com/software/containers/ubi9/ubi-minimal/615bd9b4075b022acc111bf5
 
@@ -82,20 +82,20 @@ You can override image versions and runtime versions at build time without modif
 # Override single runtime
 cd metrics-sample-undertow
 podman build -f Dockerfile.openjdk17 \
-  --build-arg BUILDER_IMAGE=registry.access.redhat.com/ubi8/openjdk-17:1.22 \
-  --build-arg RUNTIME_IMAGE=registry.access.redhat.com/ubi8/openjdk-17-runtime:1.22 \
+  --build-arg BUILDER_IMAGE=registry.access.redhat.com/ubi9/openjdk-17:1.22 \
+  --build-arg RUNTIME_IMAGE=registry.access.redhat.com/ubi9/openjdk-17-runtime:1.22 \
   -t myimage:tag .
 
 # Override via build-all.sh script (recommended for batch builds)
-BUILDER_IMAGE_17=registry.access.redhat.com/ubi8/openjdk-17:1.22 \
-RUNTIME_IMAGE_17=registry.access.redhat.com/ubi8/openjdk-17-runtime:1.22 \
+BUILDER_IMAGE_17=registry.access.redhat.com/ubi9/openjdk-17:1.22 \
+RUNTIME_IMAGE_17=registry.access.redhat.com/ubi9/openjdk-17-runtime:1.22 \
 ./scripts/build-all.sh
 
-# Override Tomcat version
-TOMCAT_VERSION=10.1.16 ./scripts/build-all.sh
+# Test different Tomcat version
+TOMCAT_VERSION=10.1.50 ./scripts/build-all.sh
 
-# Override WildFly image
-WILDFLY_IMAGE_21=quay.io/wildfly/wildfly:31.0.2.Final-jdk21 \
+# Test newer WildFly release
+WILDFLY_IMAGE_17=quay.io/wildfly/wildfly:38.0.1.Final-jdk17 \
 ./scripts/build-all.sh
 
 # Use a centralized config for batch overrides
@@ -111,7 +111,7 @@ oc edit buildconfig metrics-undertow-openjdk17
 # Or patch specific build args
 oc patch buildconfig metrics-undertow-openjdk17 --type=json -p='[
   {"op": "replace", "path": "/spec/strategy/dockerStrategy/buildArgs/0/value", 
-   "value": "registry.access.redhat.com/ubi8/openjdk-17:1.22"}
+   "value": "registry.access.redhat.com/ubi9/openjdk-17:1.22"}
 ]'
 
 # Trigger build with updated args
@@ -124,11 +124,11 @@ See [README.md](README.md#dynamic-version-management), [QUICKSTART.md](QUICKSTAR
 
 | Runtime | Arg Name | Description | Example Override |
 |---------|----------|-------------|------------------|
-| All | `BUILDER_IMAGE` | Maven build stage base | `ubi8/openjdk-17:1.22` |
-| Undertow, Spring Boot | `RUNTIME_IMAGE` | Application runtime base | `ubi8/openjdk-17-runtime:1.22` |
+| All | `BUILDER_IMAGE` | Maven build stage base | `ubi9/openjdk-17:1.22` |
+| Undertow, Spring Boot | `RUNTIME_IMAGE` | Application runtime base | `ubi9/openjdk-17-runtime:1.22` |
 | Tomcat | `RUNTIME_BASE` | Minimal UBI base | `ubi9/ubi-minimal:9.6` |
-| Tomcat | `TOMCAT_VERSION` | Apache Tomcat version | `10.1.16` |
-| WildFly | `WILDFLY_IMAGE` | WildFly runtime image | `wildfly:31.0.2.Final-jdk17` |
+| Tomcat | `TOMCAT_VERSION` | Apache Tomcat version | `10.1.50` |
+| WildFly | `WILDFLY_IMAGE` | WildFly runtime image | `wildfly:38.0.1.Final-jdk17` |
 
 ## Security Considerations
 

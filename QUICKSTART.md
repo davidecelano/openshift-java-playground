@@ -79,8 +79,8 @@ export REGISTRY=quay.io/yourorg
 
 
 # 3. Override specific versions for testing (dynamic version management)
-BUILDER_IMAGE_17=registry.access.redhat.com/ubi8/openjdk-17:1.22 \
-TOMCAT_VERSION=10.1.16 \
+BUILDER_IMAGE_17=registry.access.redhat.com/ubi9/openjdk-17:1.22 \
+TOMCAT_VERSION=10.1.50 \
 REGISTRY=quay.io/yourorg \
 ./scripts/build-all.sh
 
@@ -107,15 +107,15 @@ Test different image versions without modifying files:
 
 ```bash
 # Test newer OpenJDK patch version
-BUILDER_IMAGE_21=registry.access.redhat.com/ubi8/openjdk-21:1.22 \
-RUNTIME_IMAGE_21=registry.access.redhat.com/ubi8/openjdk-21-runtime:1.22 \
+BUILDER_IMAGE_21=registry.access.redhat.com/ubi9/openjdk-21:1.22 \
+RUNTIME_IMAGE_21=registry.access.redhat.com/ubi9/openjdk-21-runtime:1.22 \
 ./scripts/build-all.sh
 
 # Test different Tomcat version
-TOMCAT_VERSION=10.1.16 ./scripts/build-all.sh
+TOMCAT_VERSION=10.1.50 ./scripts/build-all.sh
 
 # Test newer WildFly release
-WILDFLY_IMAGE_17=quay.io/wildfly/wildfly:31.0.2.Final-jdk17 \
+WILDFLY_IMAGE_17=quay.io/wildfly/wildfly:38.0.1.Final-jdk17 \
 ./scripts/build-all.sh
 
 # Use a centralized config for batch overrides
