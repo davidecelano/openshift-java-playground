@@ -1,5 +1,5 @@
-ARG BUILDER_IMAGE=registry.access.redhat.com/ubi8/openjdk-17:1.21
-ARG WILDFLY_IMAGE=quay.io/wildfly/wildfly:31.0.1.Final-jdk17
+ARG BUILDER_IMAGE=registry.access.redhat.com/ubi9/openjdk-17:1.21
+ARG WILDFLY_IMAGE=quay.io/wildfly/wildfly:38.0.0.Final-jdk17
 
 FROM ${BUILDER_IMAGE} AS builder
 USER 0
@@ -13,15 +13,8 @@ RUN mvn clean package -DskipTests
 FROM ${WILDFLY_IMAGE}
 COPY --from=builder /tmp/build/target/metrics.war /opt/jboss/wildfly/standalone/deployments/
 
-# Configure WildFly for metrics
-RUN echo 'embed-server --std-out=echo' > /tmp/configure-micrometer.cli && \
-    echo '/extension=org.wildfly.extension.micrometer:add' >> /tmp/configure-micrometer.cli && \
-    echo '/subsystem=micrometer:add(exposed-subsystems=["*"])' >> /tmp/configure-micrometer.cli && \
-    echo '/subsystem=micrometer/registry=prometheus:add(context="/metrics",security-enabled=false)' >> /tmp/configure-micrometer.cli && \
-    echo 'stop-embedded-server' >> /tmp/configure-micrometer.cli && \
-    /opt/jboss/wildfly/bin/jboss-cli.sh --file=/tmp/configure-micrometer.cli && \
-    rm /tmp/configure-micrometer.cli
-
+# WildFly 38 includes built-in Micrometer support - no CLI configuration needed
+# Metrics automatically exposed at http://localhost:9990/metrics
 ENV JAVA_OPTS="-Xlog:os+container=info -XX:MaxRAMPercentage=65.0 -XX:InitialRAMPercentage=50.0"
 ENV JBOSS_MAX_THREADS=80
 

@@ -24,9 +24,9 @@ spec:
       forcePull: true
       buildArgs:
         - name: BUILDER_IMAGE
-          value: registry.access.redhat.com/ubi8/openjdk-11:1.21
+          value: registry.access.redhat.com/ubi9/openjdk-11:1.21
         - name: WILDFLY_IMAGE
-          value: quay.io/wildfly/wildfly:27.0.1.Final-jdk11
+          value: quay.io/wildfly/wildfly:34.0.1.Final-jdk11
   triggers:
     - type: ConfigChange
     - type: ImageChange
