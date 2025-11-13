@@ -34,8 +34,8 @@ echo ""
 FILES=(
   "README.md"
   "DEPLOYMENT.md"
-  "CONTRIBUTING.md"
-  ".github/copilot-instructions.md"
+
+
   ".github/workflows/build-metrics-samples.yml"
   "scripts/build-all.sh"
   "scripts/push-all.sh"

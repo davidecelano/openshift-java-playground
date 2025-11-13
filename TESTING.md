@@ -1,6 +1,6 @@
 # Testing & Validation Guide
 
-📚 **Documentation**: [README](README.md) | [Quick Start](QUICKSTART.md) | [Deployment](DEPLOYMENT.md) | [Testing](TESTING.md) | [Versions](VERSIONS.md) | [Version Management](VERSION_MANAGEMENT.md) | [Contributing](CONTRIBUTING.md)
+📚 **Documentation**: [README](README.md) | [Quick Start](QUICKSTART.md) | [Deployment](DEPLOYMENT.md) | [Testing](TESTING.md) | [Versions](VERSIONS.md) | [Version Management](VERSION_MANAGEMENT.md)
 
 ---
 
@@ -838,8 +838,8 @@ done
 - **[Deployment](DEPLOYMENT.md)**: Detailed deployment procedures
 - **[Implementation](IMPLEMENTATION.md)**: Technical architecture
 - **[Versions](VERSIONS.md)**: Image version matrix
-- **[Contributing](CONTRIBUTING.md)**: How to contribute
-- **[Copilot Instructions](.github/copilot-instructions.md)**: Tuning guidance
+
+
 
 ### Community Support
 - **Issues**: [GitHub Issues](https://github.com/davidecelano/openshift-java-playground/issues)
@@ -856,4 +856,4 @@ Include in bug reports:
 
 ---
 
-**✅ Validation Complete?** See **[Contributing Guide](CONTRIBUTING.md)** to add new samples or scenarios!
+**✅ Validation Complete?**

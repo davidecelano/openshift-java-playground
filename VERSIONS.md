@@ -1,6 +1,6 @@
 # Image Version Reference
 
-📚 **Documentation**: [README](README.md) | [Quick Start](QUICKSTART.md) | [Deployment](DEPLOYMENT.md) | [Testing](TESTING.md) | [Implementation](IMPLEMENTATION.md) | [Version Management](VERSION_MANAGEMENT.md) | [Contributing](CONTRIBUTING.md)
+📚 **Documentation**: [README](README.md) | [Quick Start](QUICKSTART.md) | [Deployment](DEPLOYMENT.md) | [Testing](TESTING.md) | [Implementation](IMPLEMENTATION.md) | [Version Management](VERSION_MANAGEMENT.md)
 
 ---
 

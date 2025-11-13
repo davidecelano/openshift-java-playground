@@ -1,6 +1,6 @@
 # Deployment Guide
 
-📚 **Documentation**: [README](README.md) | [Quick Start](QUICKSTART.md) | [Deployment](DEPLOYMENT.md) | [Testing](TESTING.md) | [Versions](VERSIONS.md) | [Version Management](VERSION_MANAGEMENT.md) | [Contributing](CONTRIBUTING.md)
+📚 **Documentation**: [README](README.md) | [Quick Start](QUICKSTART.md) | [Deployment](DEPLOYMENT.md) | [Testing](TESTING.md) | [Versions](VERSIONS.md) | [Version Management](VERSION_MANAGEMENT.md)
 
 ---
 
@@ -420,7 +420,7 @@ oc delete deployment,service,servicemonitor -l app=metrics-undertow
 - Export data for analysis
 
 **Tuning & Optimization**:
-- Review tuning guidance: [copilot-instructions.md](.github/copilot-instructions.md)
+
 - Experiment with JVM flags: [README.md - Examples](README.md#-example-experiments)
 - Runtime-specific tuning: See individual sample READMEs
 

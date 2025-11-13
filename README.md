@@ -63,7 +63,7 @@ curl http://localhost:8080/actuator/prometheus | grep jvm_memory
 | **[📊 Version Matrix](VERSIONS.md)** | Image versions, compatibility, update procedures |
 | **[🔄 Version Management](VERSION_MANAGEMENT.md)** | Update procedures, testing checklist, rollback strategies |
 | **[📝 Changelog](CHANGELOG.md)** | Release history, breaking changes, upgrade guides |
-| **[🤝 Contributing](CONTRIBUTING.md)** | How to add samples, scenarios, and improve documentation |
+
 
 ## 🏗️ Architecture
 
@@ -110,7 +110,7 @@ openshift-java-playground/
 ├── TESTING.md                 # Validation and troubleshooting
 ├── IMPLEMENTATION.md          # Technical architecture
 ├── VERSIONS.md                # Image version matrix
-├── CONTRIBUTING.md            # Contribution guidelines
+
 └── versions.env.example       # Version override template
 ```
 
@@ -145,7 +145,7 @@ oc logs -f deployment/undertow-openjdk17 | grep "Active Processor Count"
 ```
 
 ### Cgroups v1 vs v2
-Compare container detection across cgroups versions (see [copilot-instructions.md](.github/copilot-instructions.md) for detailed guidance)
+Compare container detection across cgroups versions.
 
 ## 🛠️ Build & Deploy Options
 
@@ -245,19 +245,7 @@ All 15 configurations validated with 100% success rate:
 - [Spring Boot Actuator](https://docs.spring.io/spring-boot/docs/current/reference/html/actuator.html)
 - [Prometheus JVM Metrics](https://github.com/prometheus/client_java)
 
-## 🤝 Contributing
 
-Contributions welcome! This repository follows TDD principles and requires validation before merging.
-
-**Quick Guide**:
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/new-scenario`)
-3. Add your changes (follow existing patterns)
-4. Test locally: `./scripts/validate-all-builds.sh`
-5. Commit with conventional message: `feat: add new tuning scenario`
-6. Submit pull request
-
-**📖 Details**: See **[Contributing Guide](CONTRIBUTING.md)** for comprehensive guidelines
 
 ## 📜 License
 

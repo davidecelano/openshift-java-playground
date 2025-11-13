@@ -1,6 +1,6 @@
 # Quick Start Guide
 
-📚 **Documentation**: [README](README.md) | [Quick Start](QUICKSTART.md) | [Deployment](DEPLOYMENT.md) | [Testing](TESTING.md) | [Versions](VERSIONS.md) | [Version Management](VERSION_MANAGEMENT.md) | [Contributing](CONTRIBUTING.md)
+📚 **Documentation**: [README](README.md) | [Quick Start](QUICKSTART.md) | [Deployment](DEPLOYMENT.md) | [Testing](TESTING.md) | [Versions](VERSIONS.md) | [Version Management](VERSION_MANAGEMENT.md)
 
 ---
 
@@ -206,6 +206,6 @@ oc exec -it deployment/metrics-undertow-openjdk17 -n java-metrics-demo -- bash
 ## Getting Help
 
 - **📚 Documentation**: [README](README.md) · [Deployment](DEPLOYMENT.md) · [Testing](TESTING.md) · [Versions](VERSIONS.md)
-- **🔧 Tuning Guide**: [copilot-instructions.md](.github/copilot-instructions.md)
+
 - **🐛 Issues**: [GitHub Issues](https://github.com/davidecelano/openshift-java-playground/issues)
 - **💬 Discussions**: [GitHub Discussions](https://github.com/davidecelano/openshift-java-playground/discussions)

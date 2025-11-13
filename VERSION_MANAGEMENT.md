@@ -1,6 +1,6 @@
 # Version Management Guide
 
-📚 **Documentation**: [README](README.md) | [Quick Start](QUICKSTART.md) | [Deployment](DEPLOYMENT.md) | [Testing](TESTING.md) | [Implementation](IMPLEMENTATION.md) | [Versions](VERSIONS.md) | [Contributing](CONTRIBUTING.md)
+📚 **Documentation**: [README](README.md) | [Quick Start](QUICKSTART.md) | [Deployment](DEPLOYMENT.md) | [Testing](TESTING.md) | [Implementation](IMPLEMENTATION.md) | [Versions](VERSIONS.md)
 
 ---
 
@@ -556,7 +556,7 @@ Add to CI pipeline:
 - **[DEPLOYMENT.md](DEPLOYMENT.md)**: Build and deployment procedures with ARG overrides
 - **[TESTING.md](TESTING.md)**: Validation scripts and troubleshooting
 - **[IMPLEMENTATION.md](IMPLEMENTATION.md)**: Technical architecture and design decisions
-- **[CONTRIBUTING.md](CONTRIBUTING.md)**: Contribution guidelines
+
 
 ---
 
