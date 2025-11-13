@@ -1,5 +1,9 @@
 # Quick Start Guide
 
+📚 **Documentation**: [README](README.md) | [Quick Start](QUICKSTART.md) | [Deployment](DEPLOYMENT.md) | [Testing](TESTING.md) | [Versions](VERSIONS.md) | [Contributing](CONTRIBUTING.md)
+
+---
+
 Get up and running with OpenShift Java metrics samples in under 10 minutes.
 
 ## Prerequisites Check
@@ -63,65 +67,9 @@ oc get pods -n java-metrics-demo -w
 ```
 
 **About `deploy-all.sh`:**
-This script applies all deployment manifests for every metrics sample (Undertow, Spring Boot, Tomcat, WildFly) and OpenJDK version to your OpenShift namespace. It prints status and how to check pods, services, and ServiceMonitors. See [DEPLOYMENT.md](DEPLOYMENT.md) for more details.
+This script applies all deployment manifests for every metrics sample (Undertow, Spring Boot, Tomcat, WildFly) and OpenJDK version to your OpenShift namespace.
 
-## Alternative: Local Build & Push (Optional)
-
-If you prefer building locally and pushing to external registry:
-
-```bash
-# 1. Update registry references
-./scripts/update-image-refs.sh quay.io/yourorg
-
-# 2. Build all images locally (with optional version overrides)
-export REGISTRY=quay.io/yourorg
-./scripts/build-all.sh
-
-
-# 3. Override specific versions for testing (dynamic version management)
-BUILDER_IMAGE_17=registry.access.redhat.com/ubi9/openjdk-17:1.22 \
-TOMCAT_VERSION=10.1.50 \
-REGISTRY=quay.io/yourorg \
-./scripts/build-all.sh
-
-# Use a centralized config for overrides
-cp versions.env.example versions.env
-source versions.env && ./scripts/build-all.sh
-
-# 4. Push to registry
-./scripts/push-all.sh
-
-# 5. Deploy
-./scripts/deploy-all.sh
-```
-
-**Note**: GitHub Actions workflow is now manual-dispatch only. Trigger via:
-```bash
-gh workflow run build-metrics-samples.yml
-```
-
-
-### Version Override Examples (Dynamic Version Management)
-
-Test different image versions without modifying files:
-
-```bash
-# Test newer OpenJDK patch version
-BUILDER_IMAGE_21=registry.access.redhat.com/ubi9/openjdk-21:1.22 \
-RUNTIME_IMAGE_21=registry.access.redhat.com/ubi9/openjdk-21-runtime:1.22 \
-./scripts/build-all.sh
-
-# Test different Tomcat version
-TOMCAT_VERSION=10.1.50 ./scripts/build-all.sh
-
-# Test newer WildFly release
-WILDFLY_IMAGE_17=quay.io/wildfly/wildfly:38.0.1.Final-jdk17 \
-./scripts/build-all.sh
-
-# Use a centralized config for batch overrides
-cp versions.env.example versions.env
-source versions.env && ./scripts/build-all.sh
-```
+**📖 More Deployment Options**: See **[DEPLOYMENT.md](DEPLOYMENT.md)** for local build & push workflows, GitHub Actions setup, and advanced deployment strategies.
 
 ## Verify Deployment
 
@@ -145,55 +93,22 @@ oc get servicemonitor -n java-metrics-demo
 
 ## Access Metrics
 
-### Option 1: Port Forward (Quick)
+### Quick Test via Port Forward
 
 ```bash
 # Undertow
 oc port-forward -n java-metrics-demo deployment/metrics-undertow-openjdk17 8080:8080 &
-curl http://localhost:8080/metrics
+curl http://localhost:8080/metrics | grep jvm_memory
 
 # Spring Boot
 oc port-forward -n java-metrics-demo deployment/metrics-springboot-openjdk17 8081:8080 &
-curl http://localhost:8081/actuator/prometheus
-
-# WildFly (note management port)
-oc port-forward -n java-metrics-demo deployment/metrics-wildfly-openjdk17 9990:9990 &
-curl http://localhost:9990/metrics
+curl http://localhost:8081/actuator/prometheus | head
 
 # Stop port-forwards
 killall oc
 ```
 
-### Option 2: Routes (Persistent)
-
-```bash
-# Create routes
-oc expose service metrics-undertow -n java-metrics-demo
-oc expose service metrics-springboot -n java-metrics-demo
-oc expose service metrics-tomcat -n java-metrics-demo
-
-# Get URLs
-oc get routes -n java-metrics-demo
-
-# Access
-ROUTE=$(oc get route metrics-undertow -n java-metrics-demo -o jsonpath='{.spec.host}')
-curl http://${ROUTE}/health
-curl http://${ROUTE}/metrics | grep jvm_memory_used
-```
-
-## Query Prometheus
-
-If Prometheus Operator is installed:
-
-```bash
-# Get Prometheus route (cluster-specific)
-oc get route -n openshift-monitoring prometheus-k8s
-
-# Open in browser and query:
-# jvm_memory_used_bytes{namespace="java-metrics-demo", area="heap"}
-# jvm_threads_live_threads{namespace="java-metrics-demo"}
-# rate(jvm_gc_pause_seconds_sum{namespace="java-metrics-demo"}[5m])
-```
+**📊 More Access Options**: See **[DEPLOYMENT.md](DEPLOYMENT.md)** for Routes, Prometheus integration, and Grafana dashboard setup.
 
 ## Run Example Experiment
 
@@ -250,47 +165,25 @@ oc get service metrics-undertow -n java-metrics-demo -o yaml
 ### Build Failures
 
 ```bash
-# Test Maven build locally first
-cd metrics-sample-<runtime>
-mvn clean package
+## Troubleshooting
 
-# Check Podman build
-podman build -f Dockerfile.openjdk17 -t test:local .
-podman run --rm test:local java -version
+**Quick checks**:
+```bash
+# Check pod status
+oc get pods -n java-metrics-demo
+
+# View pod events
+oc describe pod <pod-name> -n java-metrics-demo
+
+# Check logs
+oc logs <pod-name> -n java-metrics-demo
 ```
 
-## What to Explore Next
-
-1. **Compare Versions**: Query Prometheus for heap usage across Java versions
-   ```promql
-   jvm_memory_used_bytes{area="heap", namespace="java-metrics-demo"}
-   ```
-
-2. **Adjust Tuning**: Modify JAVA_OPTS in deployments and redeploy
-   ```bash
-   oc set env deployment/metrics-undertow-openjdk17 \
-     JAVA_OPTS="-XX:MaxRAMPercentage=75.0" -n java-metrics-demo
-   ```
-
-3. **Load Test**: Deploy a load generator to observe behavior under stress
-
-4. **Create Scenario**: Copy `example-scenario-heap-comparison/` as template
-
-5. **Review Guidance**: Read `.github/copilot-instructions.md` for tuning patterns
-
-## Cleanup
-
-```bash
-# Delete everything
-./scripts/cleanup.sh
-
-# Or just the namespace
-oc delete project java-metrics-demo
-```
-
-## Common Commands Reference
-
-```bash
+**🔧 Comprehensive Troubleshooting**: See **[TESTING.md](TESTING.md#troubleshooting)** for detailed solutions to:
+- Pods not starting (ImagePullError, OOMKilled, CrashLoopBackOff)
+- Metrics not showing (endpoint tests, ServiceMonitor configuration)
+- Build failures (Maven, Docker, BuildConfig)
+- Performance issues (memory, CPU, GC)bash
 # Build single runtime
 cd metrics-sample-undertow
 podman build -f Dockerfile.openjdk17 -t myapp:latest .
@@ -310,19 +203,9 @@ oc logs -f deployment/metrics-undertow-openjdk17 -n java-metrics-demo
 
 # Exec into pod
 oc exec -it deployment/metrics-undertow-openjdk17 -n java-metrics-demo -- bash
-
-# Capture JVM flags
-oc exec deployment/metrics-undertow-openjdk17 -n java-metrics-demo -- \
-  java -XX:+PrintFlagsFinal -version 2>&1 | grep -i container
-```
-
 ## Getting Help
 
-- **Documentation**: See `README.md`, `DEPLOYMENT.md`, `CONTRIBUTING.md`
-- **Tuning Guide**: `.github/copilot-instructions.md`
-- **Issues**: Open GitHub issue with logs and steps to reproduce
-- **Discussions**: Use GitHub Discussions for questions
-
----
-
-**Ready to start?** Run `./scripts/verify-structure.sh` to validate your setup!
+- **📚 Documentation**: [README](README.md) · [Deployment](DEPLOYMENT.md) · [Testing](TESTING.md) · [Versions](VERSIONS.md)
+- **🔧 Tuning Guide**: [copilot-instructions.md](.github/copilot-instructions.md)
+- **🐛 Issues**: [GitHub Issues](https://github.com/davidecelano/openshift-java-playground/issues)
+- **💬 Discussions**: [GitHub Discussions](https://github.com/davidecelano/openshift-java-playground/discussions)

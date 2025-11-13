@@ -1,5 +1,9 @@
 # Deployment Guide
 
+📚 **Documentation**: [README](README.md) | [Quick Start](QUICKSTART.md) | [Deployment](DEPLOYMENT.md) | [Testing](TESTING.md) | [Versions](VERSIONS.md) | [Contributing](CONTRIBUTING.md)
+
+---
+
 Complete guide for building, deploying, and monitoring metrics sample applications on OpenShift.
 
 ## Prerequisites
@@ -29,53 +33,150 @@ podman login quay.io
 
 ## Build All Samples Locally
 
-### Quick Build Script
+### Using Build Scripts
+
+The repository includes pre-built scripts for building and pushing all samples:
+
 ```bash
-#!/bin/bash
-set -e
+# Set your registry
+export REGISTRY=quay.io/yourorg
 
-REGISTRY="quay.io/yourorg"
-SAMPLES=(undertow springboot tomcat wildfly)
-VERSIONS=(11 17 21 23)
+# Build all 15 configurations
+./scripts/build-all.sh
 
-for SAMPLE in "${SAMPLES[@]}"; do
-  echo "Building metrics-sample-${SAMPLE}..."
-  cd "metrics-sample-${SAMPLE}"
-  
-  for VERSION in "${VERSIONS[@]}"; do
-    echo "  OpenJDK ${VERSION}..."
-    podman build -f Dockerfile.openjdk${VERSION} \
-      -t ${REGISTRY}/metrics-${SAMPLE}:openjdk${VERSION} .
-  done
-  
-  cd ..
-done
-
-echo "Build complete!"
+# Push to registry
+./scripts/push-all.sh
 ```
 
-Save as `build-all.sh`, make executable: `chmod +x build-all.sh`
+**Script features**:
+- Builds all 4 runtimes × multiple Java versions
+- Supports version override via environment variables
+- Validates builds before proceeding
+- Shows progress and summary
 
-### Push All Images
+**📖 Version Overrides**: See [VERSIONS.md](VERSIONS.md#dynamic-version-management) for overriding base images, Tomcat versions, and WildFly versions.
+
+### Build Single Sample
+
 ```bash
-#!/bin/bash
-set -e
-
-REGISTRY="quay.io/yourorg"
-SAMPLES=(undertow springboot tomcat wildfly)
-VERSIONS=(11 17 21 23)
-
-for SAMPLE in "${SAMPLES[@]}"; do
-  for VERSION in "${VERSIONS[@]}"; do
-    echo "Pushing ${SAMPLE}:openjdk${VERSION}..."
-    podman push ${REGISTRY}/metrics-${SAMPLE}:openjdk${VERSION}
-  done
-done
-
-echo "Push complete!"
+cd metrics-sample-undertow
+podman build -f Dockerfile.openjdk17 -t myregistry/metrics-undertow:17 .
 ```
 
-Save as `push-all.sh`, make executable: `chmod +x push-all.sh`
+### Override Versions at Build Time
+
+```bash
+# Test newer OpenJDK patch
+BUILDER_IMAGE_17=registry.access.redhat.com/ubi9/openjdk-17:1.22 \
+  ./scripts/build-all.sh
+
+# Test different Tomcat version
+TOMCAT_VERSION=10.1.50 ./scripts/build-all.sh
+
+# Use centralized config file
+cp versions.env.example versions.env
+# Edit versions.env with your overrides
+source versions.env && ./scripts/build-all.sh
+```
+
+## OpenShift BuildConfig (Cluster-Native Builds)
+
+### Overview
+
+OpenShift BuildConfig enables building container images directly in the cluster from Git sources, eliminating the need for local builds and external registry pushes.
+
+**Benefits**:
+- Build from source in cluster (no local Docker/Podman needed)
+- Automatic image tagging in ImageStream
+- Integrated with OpenShift RBAC and security
+- Triggered by Git webhook or manual start-build
+
+### Create ImageStreams
+
+```bash
+# Create ImageStream for each runtime
+oc apply -f metrics-sample-undertow/openshift/imagestream.yaml
+oc apply -f metrics-sample-springboot/openshift/imagestream.yaml
+oc apply -f metrics-sample-tomcat/openshift/imagestream.yaml
+oc apply -f metrics-sample-wildfly/openshift/imagestream.yaml
+
+# Verify ImageStreams created
+oc get imagestream
+```
+
+### Create BuildConfigs
+
+```bash
+# Create BuildConfigs for all Java versions
+oc apply -f metrics-sample-undertow/openshift/buildconfig-openjdk11.yaml
+oc apply -f metrics-sample-undertow/openshift/buildconfig-openjdk17.yaml
+oc apply -f metrics-sample-undertow/openshift/buildconfig-openjdk21.yaml
+oc apply -f metrics-sample-undertow/openshift/buildconfig-openjdk23.yaml
+
+# Repeat for other runtimes: springboot, tomcat, wildfly
+
+# Verify BuildConfigs created
+oc get buildconfig
+```
+
+### Trigger Builds
+
+```bash
+# Manual build trigger
+oc start-build metrics-undertow-openjdk17
+
+# Monitor build logs
+oc logs -f bc/metrics-undertow-openjdk17
+
+# Or use the provided script to trigger all builds
+./scripts/trigger-openshift-builds.sh
+
+# Check build status
+oc get builds
+oc get builds -w  # Watch mode
+```
+
+### Build with Version Overrides
+
+```bash
+# Override base image version
+oc start-build metrics-undertow-openjdk17 \
+  --build-arg BUILDER_IMAGE=registry.access.redhat.com/ubi9/openjdk-17:1.22
+
+# Override Tomcat version
+oc start-build metrics-tomcat-openjdk17 \
+  --build-arg TOMCAT_VERSION=10.1.50
+
+# Override WildFly image
+oc start-build metrics-wildfly-openjdk21 \
+  --build-arg WILDFLY_IMAGE=quay.io/wildfly/wildfly:38.0.1.Final-jdk21
+```
+
+### Deploy from ImageStreamTag
+
+Once builds complete, deploy using ImageStreamTags:
+
+```bash
+# Deployments reference ImageStreamTag
+# Example from deployment-openjdk17.yaml:
+# image: metrics-undertow:openjdk17
+
+oc apply -f metrics-sample-undertow/k8s/deployment-openjdk17.yaml
+oc apply -f metrics-sample-undertow/k8s/service.yaml
+```
+
+**Note**: Ensure deployment YAML references ImageStreamTag (e.g., `image: metrics-undertow:openjdk17`) not external registry image.
+
+### BuildConfig Structure
+
+Each BuildConfig includes:
+- **Source**: Git repository URL and branch
+- **Strategy**: Docker build with specific Dockerfile
+- **Output**: ImageStreamTag (e.g., `metrics-undertow:openjdk17`)
+- **Build Args**: Default versions (overridable)
+- **Triggers**: ConfigChange (auto-rebuild on BuildConfig change)
+
+**📖 More Details**: See [TESTING.md](TESTING.md#test-buildconfig-workflow) for validation procedures.
 
 ## Deploy to OpenShift
 
@@ -154,30 +255,17 @@ All Dockerfiles and BuildConfigs support dynamic version overrides for Java base
 
 ## Access Applications
 
-### Via Port Forward
+### Via Port Forward (Quick Testing)
+
+See [QUICKSTART.md](QUICKSTART.md#access-metrics) for port-forward examples.
+
 ```bash
-# Undertow
+# Quick test
 oc port-forward deployment/metrics-undertow-openjdk17 8080:8080
-curl http://localhost:8080/health
 curl http://localhost:8080/metrics
-
-# Spring Boot
-oc port-forward deployment/metrics-springboot-openjdk17 8081:8080
-curl http://localhost:8081/actuator/health
-curl http://localhost:8081/actuator/prometheus
-
-# Tomcat
-oc port-forward deployment/metrics-tomcat-openjdk17 8082:8080
-curl http://localhost:8082/health
-curl http://localhost:8082/metrics
-
-# WildFly (note management port)
-oc port-forward deployment/metrics-wildfly-openjdk17 8083:8080 9990:9990
-curl http://localhost:8083/api/health
-curl http://localhost:9990/metrics
 ```
 
-### Via OpenShift Routes
+### Via OpenShift Routes (Persistent Access)
 ```bash
 # Create routes
 oc expose service metrics-undertow
@@ -232,88 +320,51 @@ Use variables for `version` (openjdk11, openjdk17, etc.) and `runtime` (undertow
 
 ## Troubleshooting
 
-### Pod Not Starting
+**Quick Diagnostics**:
 ```bash
-# Check events
+# Check pod status
+oc get pods
+
+# View events
 oc describe pod <pod-name>
 
 # Check logs
 oc logs <pod-name>
 
-# Common issues:
-# - Image pull errors: verify registry access
-# - OOMKilled: increase memory limits
-# - CrashLoopBackOff: check application logs for startup errors
-```
-
-### Metrics Not Appearing
-```bash
-# Verify ServiceMonitor
-oc get servicemonitor -o yaml
-
-# Check Prometheus targets (via UI or API)
-# Ensure labels match between Service and ServiceMonitor
-
-# Test metrics endpoint directly
-oc exec <pod-name> -- curl -s http://localhost:8080/metrics | head -20
-```
-
-### Resource Limits
-```bash
-# Check current resource usage
+# Resource usage
 oc adm top pods
-
-# Adjust limits in deployment-*.yaml:
-resources:
-  requests:
-    memory: "512Mi"  # Increase if needed
-    cpu: "500m"
-  limits:
-    memory: "1Gi"
-    cpu: "1000m"
-
-# Apply changes
-oc apply -f k8s/deployment-openjdk17.yaml
 ```
+
+**🔧 Comprehensive Troubleshooting**: See **[TESTING.md](TESTING.md#troubleshooting)** for detailed solutions:
+- Pods not starting (ImagePullError, OOMKilled, CrashLoopBackOff, Pending)
+- Metrics not showing (endpoint tests, ServiceMonitor, Prometheus targets)
+- Build failures (Maven, Docker, BuildConfig)
+- Performance issues (memory leaks, high CPU, slow startup)
+- Container debugging procedures
 
 ## Performance Tuning Experiments
 
-### Compare Heap Ergonomics
+### Quick Tuning Test
+
 ```bash
-# Deploy all versions of same runtime
-oc apply -f metrics-sample-undertow/k8s/
+# Adjust heap percentage
+oc set env deployment/metrics-undertow-openjdk17 \
+  JAVA_OPTS="-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=60.0"
 
-# Monitor heap usage over 1 hour
-# Query: jvm_memory_used_bytes{area="heap", app="metrics-undertow"}
-
-# Compare:
-# - Max heap reached per version
-# - Time to reach steady state
-# - GC frequency
+# Compare in Prometheus
+# Query: jvm_memory_used_bytes{area="heap"}
 ```
 
-### Thread Scaling
-```bash
-# Adjust TOMCAT_MAX_THREADS in deployment
-oc set env deployment/metrics-springboot-openjdk17 TOMCAT_MAX_THREADS=100
+### Comprehensive Testing Procedures
 
-# Load test (requires load generator)
-# Monitor: jvm_threads_live_threads, process_cpu_usage
+**🧪 Performance Testing**: See **[TESTING.md](TESTING.md#performance-testing)** for detailed procedures:
+- Heap ergonomics comparison across Java versions
+- Thread scaling tests with load generation
+- Startup time analysis
+- Resource limit stress testing
+- GC behavior monitoring
 
-# Compare throughput vs thread count
-```
-
-### Startup Time
-```bash
-# Capture startup logs
-oc logs deployment/metrics-undertow-openjdk11 | grep "started"
-oc logs deployment/metrics-undertow-openjdk17 | grep "started"
-
-# Compare:
-# - Time from pod creation to ready
-# - Initial heap size vs configured
-# - Class loading time
-```
+**📊 Example Experiments**: See [README.md](README.md#-example-experiments) for memory tuning, CPU scaling, and cgroups comparisons.
 
 ## GitHub Actions Setup
 
@@ -358,9 +409,21 @@ oc delete deployment,service,servicemonitor -l app=metrics-undertow
 
 ## Next Steps
 
-1. **Baseline Capture**: Run `java -Xlog:os+container=info -XX:+PrintFlagsFinal -version` in each pod
-2. **Load Testing**: Deploy JMeter/Gatling to generate traffic
-3. **Comparative Analysis**: Export Prometheus data to CSV for statistical analysis
-4. **Tune & Iterate**: Adjust JVM flags, redeploy, measure improvements
+**Validation & Testing**:
+- Run validation scripts: `./scripts/quick-validate-builds.sh`
+- See [TESTING.md](TESTING.md) for comprehensive testing procedures
+- Capture baseline JVM flags: [TESTING.md - Capture Diagnostics](TESTING.md#capture-jvm-diagnostics)
 
-See individual sample READMEs for runtime-specific tuning guidance.
+**Monitoring & Analysis**:
+- Set up Grafana dashboards (see Monitor with Prometheus section above)
+- Query metrics in Prometheus (see examples above)
+- Export data for analysis
+
+**Tuning & Optimization**:
+- Review tuning guidance: [copilot-instructions.md](.github/copilot-instructions.md)
+- Experiment with JVM flags: [README.md - Examples](README.md#-example-experiments)
+- Runtime-specific tuning: See individual sample READMEs
+
+**Version Management**:
+- Update base images: [VERSIONS.md](VERSIONS.md)
+- Test new versions: [TESTING.md - ARG Overrides](TESTING.md#test-arg-parameterization)
